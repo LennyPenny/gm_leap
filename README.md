@@ -8,6 +8,7 @@ A module to interface Garry's Mod with the leap motion device  ( https://www.lea
 For users
 
 Drop gmcl_leap.dll in your garrysmod/garrysmod/lua/bin/
+
 Drop Leap.dll in garrysmod folder where hl2.exe is.
 
 =======
