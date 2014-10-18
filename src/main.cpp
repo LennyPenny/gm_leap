@@ -14,6 +14,26 @@ int leap_IsConnected(lua_State *state) {
 	return 1;
 }
 
+int leap_Frame(lua_State *state) {
+	Frame frame;
+
+	if (LUA->Top() > 0) {
+		frame = controller->frame(LUA->CheckNumber());
+	}
+	else {
+		frame = controller->frame();
+	}
+
+	Lua::UserData* ud = (Lua::UserData*)LUA->NewUserdata(sizeof(Lua::UserData));
+	ud->data = &frame;
+	ud->type = Lua::Type::USERDATA;
+
+	LUA->CreateMetaTableType("LeapFrame", Lua::Type::USERDATA);
+	LUA->SetMetaTable(-2);
+
+	return 1;
+}
+
 GMOD_MODULE_OPEN() {
 	
 	controller = new (fake_heap) Controller;
@@ -24,6 +44,9 @@ GMOD_MODULE_OPEN() {
 
 			LUA->PushCFunction(leap_IsConnected);
 			LUA->SetField(-2, "IsConnected");
+
+			LUA->PushCFunction(leap_Frame);
+			LUA->SetField(-2, "Frame");
 
 		LUA->SetField(-2, "leap");
 
