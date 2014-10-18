@@ -2,7 +2,7 @@ assert(os.getenv("LEAP_SDK"), "LEAP_SDK environmental variable not set")
 
 local LEAP_SDK = os.getenv("LEAP_SDK")
 
-solution "gm_stringtable"
+solution "gm_leap"
 	language "C++"
 	location "project"
 	targetdir "bin"
