@@ -5,10 +5,29 @@
 using namespace GarrysMod;
 using namespace Leap;
 
+Controller controller;
+
 GMOD_MODULE_OPEN() {
 	return 0;
 }
 
+int leap_IsConnected(lua_State *state) {
+	LUA->PushBool(controller.isConnected());
+
+	return 1;
+}
+
 GMOD_MODULE_CLOSE() {
+	LUA->PushSpecial(Lua::SPECIAL_GLOB);
+
+		LUA->CreateTable();
+
+			LUA->PushCFunction(leap_IsConnected);
+			LUA->SetField(-2, "IsConnected");
+
+		LUA->SetField(-2, "leap");
+
+	LUA->Pop();
+
 	return 0;
 }
