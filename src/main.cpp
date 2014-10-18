@@ -7,17 +7,13 @@ using namespace Leap;
 
 Controller controller;
 
-GMOD_MODULE_OPEN() {
-	return 0;
-}
-
 int leap_IsConnected(lua_State *state) {
 	LUA->PushBool(controller.isConnected());
 
 	return 1;
 }
 
-GMOD_MODULE_CLOSE() {
+GMOD_MODULE_OPEN() {
 	LUA->PushSpecial(Lua::SPECIAL_GLOB);
 
 		LUA->CreateTable();
@@ -29,5 +25,9 @@ GMOD_MODULE_CLOSE() {
 
 	LUA->Pop();
 
+	return 0;
+}
+
+GMOD_MODULE_CLOSE() {
 	return 0;
 }
