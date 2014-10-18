@@ -9,7 +9,7 @@ For users
 
 Download the module from the releases section ( https://github.com/LennyPenny/gm_leap/releases )
 
-Drop gmcl_leap.dll in your garrysmod/garrysmod/lua/bin/
+Drop gmcl_leap_win32.dll in your garrysmod/garrysmod/lua/bin/
 
 Drop Leap.dll in the garrysmod folder where hl2.exe is.
 
