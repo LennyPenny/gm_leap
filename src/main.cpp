@@ -5,15 +5,19 @@
 using namespace GarrysMod;
 using namespace Leap;
 
-Controller controller;
+Controller *controller = nullptr;
+void *fake_heap[sizeof(Controller)];
 
 int leap_IsConnected(lua_State *state) {
-	LUA->PushBool(controller.isConnected());
+	LUA->PushBool(controller->isConnected());
 
 	return 1;
 }
 
 GMOD_MODULE_OPEN() {
+	
+	controller = new (fake_heap) Controller;
+
 	LUA->PushSpecial(Lua::SPECIAL_GLOB);
 
 		LUA->CreateTable();
@@ -29,5 +33,9 @@ GMOD_MODULE_OPEN() {
 }
 
 GMOD_MODULE_CLOSE() {
+	if ( controller ){
+		controller->~Controller();
+		controller = nullptr;
+	}
 	return 0;
 }
