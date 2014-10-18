@@ -34,6 +34,27 @@ int leap_Frame(lua_State *state) {
 	return 1;
 }
 
+
+//LeapFrame Metamethods
+
+int LeapFrame_tostring(lua_State* state) {
+	Lua::UserData* ud = (Lua::UserData*)LUA->GetUserdata();
+	Frame* frame = (Frame*)ud->data;
+
+	LUA->PushString(frame->toString().c_str());
+
+	return 1;
+}
+
+int LeapFrame_Serialize(lua_State* state) {
+	Lua::UserData* ud = (Lua::UserData*)LUA->GetUserdata();
+	Frame* frame = (Frame*)ud->data;
+
+	LUA->PushString(frame->serialize().c_str());
+
+	return 1;
+}
+
 GMOD_MODULE_OPEN() {
 	
 	controller = new (fake_heap) Controller;
@@ -49,6 +70,21 @@ GMOD_MODULE_OPEN() {
 			LUA->SetField(-2, "Frame");
 
 		LUA->SetField(-2, "leap");
+
+		LUA->CreateMetaTableType("LeapFrame", Lua::Type::USERDATA);
+			LUA->Push(-1);
+			LUA->SetField(-2, "__index");
+
+			LUA->PushCFunction(LeapFrame_tostring);
+			LUA->SetField(-2, "__tostring");
+
+			LUA->PushString("LeapFrame");
+			LUA->SetField(-2, "__type");
+
+			LUA->PushCFunction(LeapFrame_Serialize);
+			LUA->SetField(-2, "Serialize");
+		
+		LUA->Pop();
 
 	LUA->Pop();
 
