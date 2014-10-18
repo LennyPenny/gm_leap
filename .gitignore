@@ -5,6 +5,10 @@
 *.suo
 *.user
 *.sln.docstates
+premake5.exe
+
+#project files
+project/
 
 # Build results
 [Dd]ebug/
