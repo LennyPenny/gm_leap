@@ -2,8 +2,11 @@
 
 #include "Leap.h"
 
+#include "GMod_LeapFrame.h"
+
 using namespace GarrysMod;
 using namespace Leap;
+using namespace GModLeap;
 
 Controller *controller = nullptr;
 void *fake_heap[sizeof(Controller)];
@@ -30,63 +33,14 @@ int leap_Frame(lua_State *state) {
 
 	Lua::UserData* ud = (Lua::UserData*)LUA->NewUserdata(sizeof(Lua::UserData));
 	ud->data = frame;
-	ud->type = 99;
+	ud->type = LeapFrame::TYPE;
 
-	LUA->CreateMetaTableType("LeapFrame", 99 );
+	LUA->CreateMetaTableType("LeapFrame", LeapFrame::TYPE );
 	LUA->SetMetaTable( -2 );
 
 	return 1;
 }
 
-
-//LeapFrame Metamethods
-
-int LeapFrame_tostring(lua_State* state) {
-	Lua::UserData* ud = (Lua::UserData*)LUA->GetUserdata();
-	
-	if ( !ud ) return 0;
-
-	Frame* frame = (Frame*)ud->data;
-	if ( !frame || !frame->isValid() )
-	{
-		return 0;
-	}
-
-	LUA->PushString(frame->toString().c_str());
-	return 1;
-}
-
-int LeapFrame_Serialize(lua_State* state) {
-	
-	Lua::UserData* ud = (Lua::UserData*)LUA->GetUserdata();
-	
-	if ( !ud ) return 0;
-
-	Frame* frame = (Frame*)ud->data;
-	if ( !frame || !frame->isValid() )
-	{
-		return 0;
-	}
-
-	LUA->PushString(frame->serialize().c_str());
-	return 1;
-}
-
-int LeapFrame_IsValid(lua_State* state) {
-	
-	Lua::UserData* ud = (Lua::UserData*)LUA->GetUserdata();
-	
-	if ( !ud ) return 0;
-
-	Frame* frame = (Frame*)ud->data;
-	if ( !frame )
-	{
-		return 0;
-	}
-
-	LUA->PushBool( frame->isValid() );
-	return 1;
-}
 
 
 GMOD_MODULE_OPEN() {
@@ -105,20 +59,20 @@ GMOD_MODULE_OPEN() {
 
 		LUA->SetField(-2, "leap");
 
-		LUA->CreateMetaTableType("LeapFrame", Lua::Type::USERDATA);
+		LUA->CreateMetaTableType("LeapFrame", LeapFrame::TYPE);
 			LUA->Push(-1);
 			LUA->SetField(-2, "__index");
 
-			LUA->PushCFunction(LeapFrame_tostring);
+			LUA->PushCFunction(LeapFrame::tostring);
 			LUA->SetField(-2, "__tostring");
 
 			LUA->PushString("LeapFrame");
 			LUA->SetField(-2, "__type");
 
-			LUA->PushCFunction(LeapFrame_Serialize);
+			LUA->PushCFunction(LeapFrame::Serialize);
 			LUA->SetField(-2, "Serialize");
 
-			LUA->PushCFunction(LeapFrame_IsValid);
+			LUA->PushCFunction(LeapFrame::Serialize);
 			LUA->SetField(-2, "IsValid");
 
 		
