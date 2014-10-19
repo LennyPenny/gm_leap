@@ -141,7 +141,7 @@ int LeapHand::GrabStrength( lua_State *state ) {
 	Hand *hand = Get( state );
 	if ( !hand ) return 0;
 
-	LUA->PushNumber( hand->grabStrength );
+	LUA->PushNumber( hand->grabStrength() );
 
 	return 1;
 }
@@ -278,7 +278,8 @@ int LeapHand::RotationMatrix( lua_State *state ) {
 	Hand *hand = Get( state );
 	if ( !hand ) return 0;
 
-	Matrix *rmatrix = new Matrix( hand->rotationMatrix() );
+	LUA->CheckType( -1, LeapFrame::TYPE );
+	Matrix *rmatrix = new Matrix( hand->rotationMatrix( *LeapFrame::Get( state ) ) );
 
 	//TODO
 
