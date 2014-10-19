@@ -9,9 +9,9 @@ void GModLeap::PushSourceVector( lua_State *state, Leap::Vector *vector ) {
 	LUA->PushSpecial( Lua::SPECIAL_GLOB );
 
 	LUA->GetField( -1, "Vector" );
-	LUA->PushNumber( vector->x );
+	LUA->PushNumber( -1 * vector->x );
+	LUA->PushNumber( vector->z ); //dont ask me why leap made it like this
 	LUA->PushNumber( vector->y );
-	LUA->PushNumber( vector->z );
 	LUA->Call( 3, 1 );
 	LUA->Remove( -2 );
 }
