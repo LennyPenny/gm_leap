@@ -16,15 +16,15 @@ namespace GModLeap
 
 		int tostring( lua_State *state );
 
-		int arm( lua_State *state );
-		int basis( lua_State *state );
-		int confidence( lua_State *state );
-		int direction( lua_State *state );
-		int finger( lua_State *state );
-		int fingers( lua_State *state );
-		int frame( lua_State *state );
+		int Arm( lua_State *state );
+		int Basis( lua_State *state );
+		int Confidence( lua_State *state );
+		int Direction( lua_State *state );
+		int Finger( lua_State *state );
+		int Fingers( lua_State *state );
+		int Frame( lua_State *state );
 		int GrabStrength( lua_State *state );
-		int Id( lua_State *state );
+		int ID( lua_State *state );
 		int Invalid( lua_State *state );
 		int IsLeft( lua_State *state );
 		int IsRight( lua_State *state );
