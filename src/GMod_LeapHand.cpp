@@ -9,50 +9,50 @@ using namespace GModLeap;
 int LeapHand::TYPE = 100; //random
 
 
-void LeapHand::DefineMeta(lua_State * state)
+void LeapHand::DefineMeta( lua_State *state)
 {
-	LUA->CreateMetaTableType("LeapHand", LeapHand::TYPE);
-		LUA->Push(-1);
-		LUA->SetField(-2, "__index");
+	LUA->CreateMetaTableType( "LeapHand" , LeapHand::TYPE );
+		LUA->Push( -1 );
+		LUA->SetField( -2 , "__index" );
 
-		LUA->PushCFunction(LeapHand::tostring);
-		LUA->SetField(-2, "__tostring");
+		LUA->PushCFunction( LeapHand::tostring );
+		LUA->SetField( -2 , "__tostring" );
 
-		LUA->PushString("LeapHand");
-		LUA->SetField(-2, "__type");
+		LUA->PushString( "LeapHand" );
+		LUA->SetField( -2 , "__type" );
 
-		LUA->PushCFunction(LeapHand::IsValid);
-		LUA->SetField(-2, "IsValid");
+		LUA->PushCFunction( LeapHand::IsValid );
+		LUA->SetField( -2 , "IsValid" );
 	LUA->Pop();
 }
 
-Hand *LeapHand::Get(lua_State *state, int pos)
+Hand *LeapHand::Get( lua_State *state , int pos )
 {
-	if (!LUA->IsType(pos, LeapHand::TYPE)) return nullptr;
+	if ( !LUA->IsType( pos , LeapHand::TYPE ) ) return nullptr;
 
-	Lua::UserData* ud = (Lua::UserData*)LUA->GetUserdata();
+	Lua::UserData *ud = ( Lua::UserData * ) LUA->GetUserdata();
 
-	if (!ud) return nullptr;
+	if ( !ud ) return nullptr;
 
-	Hand* hand = (Hand*)ud->data;
-	if (!hand) return nullptr;
+	Hand *hand = ( Hand * ) ud->data;
+	if ( !hand ) return nullptr;
 
 	return hand;
 }
 
-void LeapHand::Push(lua_State * state, Leap::Frame *Hand)
+void LeapHand::Push( lua_State * state, Leap::Hand *Hand )
 {
-	if (!Hand) return;
+	if ( !Hand ) return;
 
-	Lua::UserData* ud = (Lua::UserData*)LUA->NewUserdata(sizeof(Lua::UserData));
+	Lua::UserData *ud = ( Lua::UserData * ) LUA->NewUserdata( sizeof( Lua::UserData ) );
 	ud->data = Hand;
 	ud->type = LeapHand::TYPE;
 
-	LUA->CreateMetaTableType("LeapHand", LeapHand::TYPE);
-	LUA->SetMetaTable(-2);
+	LUA->CreateMetaTableType( "LeapHand" , LeapHand::TYPE );
+	LUA->SetMetaTable( -2 );
 }
 
-int LeapHand::tostring(lua_State* state) {
+int LeapHand::tostring( lua_State *state ) {
 	Hand *hand = Get( state );
 	if ( !hand ) return 0;
 
@@ -62,7 +62,7 @@ int LeapHand::tostring(lua_State* state) {
 }
 
 
-int LeapHand::IsValid(lua_State *state) {
+int LeapHand::IsValid( lua_State *state ) {
 	Hand *hand = Get(state);
 	if ( !hand ) return 0;
 
