@@ -21,12 +21,11 @@ namespace GModLeap
 		int Frame( lua_State *state );
 		int Hand( lua_State *state );
 		int ID( lua_State *state );
-		int Invalid( lua_State *state );
 		int IsExtended( lua_State*state );
 		int IsFinger( lua_State *state );
 		int IsTool( lua_State *state );
 		int IsValid( lua_State *state );
-		int JoinPosition( lua_State *state );
+		int JointPosition( lua_State *state );
 		int Length( lua_State *state );
 		int StabilizedTipPosition( lua_State *state );
 		int TimeVisible( lua_State *state );

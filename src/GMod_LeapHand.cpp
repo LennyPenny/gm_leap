@@ -222,9 +222,20 @@ int LeapHand::Fingers( lua_State *state ) {
 	Hand *hand = Get( state );
 	if ( !hand ) return 0;
 
-	FingerList *flist = new FingerList( hand->fingers() );
+	Leap::FingerList list = hand->fingers();
 
-	//TODO
+	LUA->CreateTable();
+
+	int i = 1;
+	for ( auto fingersit = list.begin(); fingersit != list.end(); ++fingersit ) 
+	{
+		Leap::Finger *finger = new Leap::Finger( *fingersit );
+		LUA->PushNumber( i );
+		LeapFinger::Push( state, finger );
+		LUA->SetTable( -3 );
+
+		i++;
+	}
 
 	return 1;
 }
