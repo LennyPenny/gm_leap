@@ -1,4 +1,7 @@
 #include "Leap.h"
+
+#include "util.h"
+
 #include "GMod_LeapHand.h"
 
 #include "GMod_LeapFinger.h"
@@ -99,9 +102,7 @@ int LeapHand::Direction( lua_State *state ) {
 	Hand *hand = Get(state);
 	if ( !hand ) return 0;
 
-	Vector *dir = new Vector( hand->direction() );
-
-	//TODO
+	PushSourceVector( state, new Vector( hand->direction() ) );
 
 	return 1;
 }
@@ -186,9 +187,7 @@ int LeapHand::PalmNormal( lua_State *state ) {
 	Hand *hand = Get( state );
 	if ( !hand ) return 0;
 
-	Vector *pnormal = new Vector( hand->palmNormal() );
-
-	//TODO
+	PushSourceVector( state, new Vector( hand->palmNormal() ) );
 
 	return 1;
 }
@@ -197,7 +196,7 @@ int LeapHand::PalmPosition( lua_State *state ) {
 	Hand *hand = Get( state );
 	if ( !hand ) return 0;
 
-	Vector *pnormal = new Vector( hand->palmPosition() );
+	PushSourceVector( state, new Vector( hand->palmPosition() ) );
 
 	return 1;
 }
@@ -206,9 +205,7 @@ int LeapHand::PalmVelocity( lua_State *state ) {
 	Hand *hand = Get( state );
 	if ( !hand ) return 0;
 
-	Vector *pnormal = new Vector( hand->palmVelocity() );
-
-	//TODO
+	PushSourceVector( state, new Vector( hand->palmVelocity() ) );
 
 	return 1;
 }
@@ -267,9 +264,7 @@ int LeapHand::RotationAxis( lua_State *state ) {
 	if ( !hand ) return 0;
 
 	LUA->CheckType( -1, LeapFrame::TYPE );
-	Vector *raxis = new Vector ( hand->rotationAxis( *LeapFrame::Get( state ) ) );
-
-	//TODO
+	PushSourceVector( state, new Vector( hand->rotationAxis( *LeapFrame::Get( state ) ) ) );
 
 	return 1;
 }
@@ -320,9 +315,7 @@ int LeapHand::SphereCenter( lua_State *state ) {
 	Hand *hand = Get( state );
 	if ( !hand ) return 0;
 
-	Vector *center = new Vector( hand->sphereCenter() );
-
-	//TODO
+	PushSourceVector( state, new Vector( hand->sphereCenter() ) );
 
 	return 1;
 }
@@ -340,9 +333,7 @@ int LeapHand::StabilizedPalmPosition( lua_State *state ) {
 	Hand *hand = Get( state );
 	if ( !hand ) return 0;
 
-	Vector *center = new Vector( hand->stabilizedPalmPosition() );
-
-	//TODO
+	PushSourceVector( state, new Vector( hand->stabilizedPalmPosition() ) );
 
 	return 1;
 }
@@ -381,9 +372,7 @@ int LeapHand::Translation( lua_State *state ) {
 	if ( !hand ) return 0;
 	
 	LUA->CheckType( -1, LeapFrame::TYPE );
-	Vector *translation = new Vector( hand->translation( *LeapFrame::Get( state ) ) );
-
-	//TODO
+	PushSourceVector( state, new Vector( hand->translation( *LeapFrame::Get( state ) ) ) );
 
 	return 1;
 }
@@ -402,7 +391,7 @@ int LeapHand::WristPosition( lua_State *state ) {
 	Hand *hand = Get( state );
 	if ( !hand ) return 0;
 
-	Vector *wristpos = new Vector( hand->wristPosition() );
+	PushSourceVector( state, new Vector( hand->wristPosition() ) );
 
 	//TODO
 
