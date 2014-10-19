@@ -1,4 +1,5 @@
 #include "GMod_LeapFrame.h"
+#include "GMod_LeapHand.h"
 
 using namespace GarrysMod;
 using namespace Leap;
@@ -20,8 +21,14 @@ void LeapFrame::DefineMeta( lua_State * state )
 		LUA->PushString( "LeapFrame" );
 		LUA->SetField( -2 , "__type" );
 
+		LUA->PushCFunction( LeapFrame::Hands );
+		LUA->SetField( -2 , "GetHands" );
+
 		LUA->PushCFunction( LeapFrame::Serialize );
 		LUA->SetField( -2 , "Serialize" );
+	
+		LUA->PushCFunction( LeapFrame::TimeStamp );
+		LUA->SetField( -2 , "TimeStamp" );
 
 		LUA->PushCFunction( LeapFrame::IsValid );
 		LUA->SetField( -2 , "IsValid" );
@@ -73,25 +80,30 @@ int LeapFrame::CurrentFramesPerSecond( lua_State *state ) {
 	return 1;
 }
 
-int LeapFrame::Finger( lua_State *state) {
+int LeapFrame::Hands( lua_State *state ) {
 	Frame *frame = Get( state );
 	if ( !frame ) return 0;
+	
+	
+	Leap::HandList list = frame->hands();
+	
+	LUA->CreateTable();
 
-	//TODO
-
+	int i = 1;
+	for ( auto handsit = list.begin(); handsit != list.end(); ++handsit )
+	{
+		Leap::Hand * hand = new Leap::Hand( * handsit );
+		LUA->PushNumber( i );
+		LeapHand::Push( state , hand );
+		LUA->SetTable( -3 );
+		i++;
+	}
+	
 	return 1;
 }
 
-int LeapFrame::Fingers(lua_State* state) {
-	Frame *frame = Get( state );
-	if ( !frame ) return 0;
 
-	//TODO
-
-	return 1;
-}
-
-int LeapFrame::IsValid(lua_State* state) {
+int LeapFrame::IsValid( lua_State* state) {
 	Frame *frame = Get( state );
 	if ( !frame ) return 0;
 
@@ -99,11 +111,18 @@ int LeapFrame::IsValid(lua_State* state) {
 	return 1;
 }
 
-int LeapFrame::Serialize(lua_State* state) {
+int LeapFrame::Serialize( lua_State* state) {
 	Frame *frame = Get( state );
 	if ( !frame ) return 0;
 
 	LUA->PushString( frame->serialize().c_str() );
+	return 1;
+}
+
+int LeapFrame::TimeStamp( lua_State* state) {
+	Frame *frame = Get( state );
+	if ( !frame ) return 0;
+	LUA->PushNumber( frame->timestamp() / 1000.f );
 	return 1;
 }
 
