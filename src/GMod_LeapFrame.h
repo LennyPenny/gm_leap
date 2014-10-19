@@ -1,10 +1,19 @@
+#ifndef GMOD_LEAPFRAME_INCLUDE
+#define GMOD_LEAPFRAME_INCLUDE
+
 #include "GarrysMod\Lua\Interface.h"
+#include "Leap.h"
 
 namespace GModLeap 
 {
 	namespace LeapFrame
 	{
 		extern int TYPE;
+
+		void DefineMeta( lua_State * state );
+
+		Leap::Frame * Get( lua_State * state , int pos = -1 );
+		void Push( lua_State * state , Leap::Frame * frame );
 
 		int tostring(lua_State* state);
 
@@ -36,3 +45,5 @@ namespace GModLeap
 		int TranslationProbability(lua_State* state);
 	}
 }
+
+#endif

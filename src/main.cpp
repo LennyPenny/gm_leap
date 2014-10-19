@@ -21,7 +21,7 @@ int leap_Frame(lua_State *state) {
 	
 	//Jvs:	I'm using the copy constructor due to the controller cleaning up the history after a few ticks
 	//		we're gonna have to add a __gc method to the frame, but this also stops the crashing bullshit
-
+	
 	Frame * frame;
 	
 	if (LUA->Top() > 0) {
@@ -31,12 +31,7 @@ int leap_Frame(lua_State *state) {
 		frame = new Frame( controller->frame() );
 	}
 
-	Lua::UserData* ud = (Lua::UserData*)LUA->NewUserdata(sizeof(Lua::UserData));
-	ud->data = frame;
-	ud->type = LeapFrame::TYPE;
-
-	LUA->CreateMetaTableType("LeapFrame", LeapFrame::TYPE );
-	LUA->SetMetaTable( -2 );
+	LeapFrame::Push( state , frame );
 
 	return 1;
 }
@@ -59,24 +54,8 @@ GMOD_MODULE_OPEN() {
 
 		LUA->SetField(-2, "leap");
 
-		LUA->CreateMetaTableType("LeapFrame", LeapFrame::TYPE);
-			LUA->Push(-1);
-			LUA->SetField(-2, "__index");
 
-			LUA->PushCFunction(LeapFrame::tostring);
-			LUA->SetField(-2, "__tostring");
-
-			LUA->PushString("LeapFrame");
-			LUA->SetField(-2, "__type");
-
-			LUA->PushCFunction(LeapFrame::Serialize);
-			LUA->SetField(-2, "Serialize");
-
-			LUA->PushCFunction(LeapFrame::Serialize);
-			LUA->SetField(-2, "IsValid");
-
-		
-		LUA->Pop();
+		LeapFrame::DefineMeta( state );
 
 	LUA->Pop();
 
