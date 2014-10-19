@@ -3,6 +3,8 @@
 #include "Leap.h"
 
 #include "GMod_LeapFrame.h"
+#include "GMod_LeapHand.h"
+#include "GMod_LeapFinger.h"
 
 using namespace GarrysMod;
 using namespace Leap;
@@ -56,6 +58,10 @@ GMOD_MODULE_OPEN() {
 
 
 		LeapFrame::DefineMeta( state );
+
+		LeapHand::DefineMeta( state );
+
+		LeapFinger::DefineMeta( state );
 
 	LUA->Pop();
 

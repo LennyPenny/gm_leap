@@ -56,11 +56,11 @@ void LeapFrame::Push( lua_State * state , Leap::Frame * frame )
 }
 
 int LeapFrame::tostring(lua_State* state) {
-	
-	Frame * frame = Get( state );
+	Frame *frame = Get( state );
 	if ( !frame ) return 0;
 
 	LUA->PushString(frame->toString().c_str());
+
 	return 1;
 }
 
@@ -95,7 +95,7 @@ int LeapFrame::IsValid(lua_State* state) {
 	Frame * frame = Get( state );
 	if ( !frame ) return 0;
 
-	LUA->PushBool(frame->isValid());
+	LUA->PushBool( frame->isValid() );
 	return 1;
 }
 
@@ -103,7 +103,7 @@ int LeapFrame::Serialize(lua_State* state) {
 	Frame * frame = Get( state );
 	if ( !frame ) return 0;
 
-	LUA->PushString(frame->serialize().c_str());
+	LUA->PushString( frame->serialize().c_str() );
 	return 1;
 }
 
