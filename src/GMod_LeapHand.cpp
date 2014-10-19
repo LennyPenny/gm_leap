@@ -27,8 +27,108 @@ void LeapHand::DefineMeta( lua_State *state)
 		LUA->PushString( "LeapHand" );
 		LUA->SetField( -2 , "__type" );
 
+		LUA->PushCFunction( LeapHand::Arm );
+		LUA->SetField( -2, "Arm" );
+
+		LUA->PushCFunction( LeapHand::Basis );
+		LUA->SetField( -2, "Basis" );
+
+		LUA->PushCFunction( LeapHand::Confidence );
+		LUA->SetField( -2, "Confidence" );
+
+		LUA->PushCFunction( LeapHand::Direction );
+		LUA->SetField( -2, "Direction" );
+
+		LUA->PushCFunction( LeapHand::Finger );
+		LUA->SetField( -2, "GetFinger" );
+
+		LUA->PushCFunction( LeapHand::Fingers );
+		LUA->SetField( -2, "GetFingers" );
+
+		LUA->PushCFunction( LeapHand::Frame );
+		LUA->SetField( -2, "GetFrame" );
+
+		LUA->PushCFunction( LeapHand::GrabStrength );
+		LUA->SetField( -2, "GrabStrength" );
+
+		LUA->PushCFunction( LeapHand::ID );
+		LUA->SetField( -2, "ID" );
+
+		LUA->PushCFunction( LeapHand::IsLeft );
+		LUA->SetField( -2, "IsLeft" );
+
+		LUA->PushCFunction( LeapHand::IsRight );
+		LUA->SetField( -2, "IsRight" );
+
 		LUA->PushCFunction( LeapHand::IsValid );
-		LUA->SetField( -2 , "IsValid" );
+		LUA->SetField( -2, "IsValid" );
+
+		LUA->PushCFunction( LeapHand::PalmNormal );
+		LUA->SetField( -2, "PalmNormal" );
+
+		LUA->PushCFunction( LeapHand::PalmPosition );
+		LUA->SetField( -2, "PalmPosition" );
+
+		LUA->PushCFunction( LeapHand::PalmVelocity );
+		LUA->SetField( -2, "PalmVelocity" );
+
+		LUA->PushCFunction( LeapHand::PalmWidth );
+		LUA->SetField( -2, "PalmWidth" );
+
+		LUA->PushCFunction( LeapHand::PinchStrength );
+		LUA->SetField( -2, "PinchStrength" );
+
+		LUA->PushCFunction( LeapHand::Pointable );
+		LUA->SetField( -2, "GetPointable" );
+
+		LUA->PushCFunction( LeapHand::Pointables );
+		LUA->SetField( -2, "GetPointables" );
+
+		LUA->PushCFunction( LeapHand::RotationAngle );
+		LUA->SetField( -2, "RotationAngle" );
+
+		LUA->PushCFunction( LeapHand::RotationAxis );
+		LUA->SetField( -2, "RotationAxis" );
+
+		LUA->PushCFunction( LeapHand::RotationMatrix );
+		LUA->SetField( -2, "RotationMatrix" );
+
+		LUA->PushCFunction( LeapHand::RotationProbability );
+		LUA->SetField( -2, "RotationProbability" );
+
+		LUA->PushCFunction( LeapHand::ScaleFactor );
+		LUA->SetField( -2, "ScaleFactor" );
+
+		LUA->PushCFunction( LeapHand::ScaleProbability );
+		LUA->SetField( -2, "ScaleProbability" );
+
+		LUA->PushCFunction( LeapHand::SphereCenter );
+		LUA->SetField( -2, "SphereCenter" );
+
+		LUA->PushCFunction( LeapHand::SphereRadius );
+		LUA->SetField( -2, "SphereRadius" );
+
+		LUA->PushCFunction( LeapHand::StabilizedPalmPosition );
+		LUA->SetField( -2, "StabilizedPalmPosition" );
+
+		LUA->PushCFunction( LeapHand::TimeVisible );
+		LUA->SetField( -2, "TimeVisible" );
+
+		LUA->PushCFunction( LeapHand::Tool );
+		LUA->SetField( -2, "GetTool" );
+
+		LUA->PushCFunction( LeapHand::Tools );
+		LUA->SetField( -2, "GetTools" );
+
+		LUA->PushCFunction( LeapHand::Translation );
+		LUA->SetField( -2, "Translation" );
+
+		LUA->PushCFunction( LeapHand::TranslationProbability );
+		LUA->SetField( -2, "TranslationProbability" );
+
+		LUA->PushCFunction( LeapHand::WristPosition );
+		LUA->SetField( -2, "WristPosition" );
+
 	LUA->Pop();
 }
 
