@@ -125,7 +125,6 @@ int LeapFinger::Bone( lua_State *state ) {
 	if ( !finger ) return 0;
 
 	LeapBone::Push( state, new Leap::Bone( finger->bone( ( Bone::Type ) ( ( int ) LUA->CheckNumber() ) ) ) );
-
 	return 1;
 }
 

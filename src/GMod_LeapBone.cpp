@@ -57,7 +57,7 @@ void LeapBone::DefineMeta( lua_State *state ) {
 }
 
 Bone *LeapBone::Get( lua_State *state, int pos ) {
-	if ( !LUA->IsType( pos, LeapFinger::TYPE ) ) return nullptr;
+	if ( !LUA->IsType( pos, LeapBone::TYPE ) ) return nullptr;
 
 	Lua::UserData *ud = ( Lua::UserData * ) LUA->GetUserdata();
 
