@@ -5,7 +5,6 @@
 #include "GMod_LeapFrame.h"
 #include "GMod_LeapHand.h"
 #include "GMod_LeapFinger.h"
-#include "GMod_LeapBone.h"
 
 using namespace GarrysMod;
 using namespace Leap;
@@ -124,7 +123,7 @@ int LeapFinger::Bone( lua_State *state ) {
 	Finger *finger = Get( state );
 	if ( !finger ) return 0;
 
-	LeapBone::Push( state, new Leap::Bone( finger->bone( ( Bone::Type ) LUA->CheckNumber() ) ) );
+	//TODO
 
 	return 1;
 }
