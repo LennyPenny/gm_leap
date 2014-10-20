@@ -17,6 +17,7 @@ namespace GModLeap
 		int tostring( lua_State *state );
 
 		int Bone( lua_State *state );
+		int Bones( lua_State *state );
 		int Direction( lua_State *state );
 		int Frame( lua_State *state );
 		int Hand( lua_State *state );

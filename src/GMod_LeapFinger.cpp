@@ -30,6 +30,9 @@ void LeapFinger::DefineMeta( lua_State *state )
 		LUA->PushCFunction(LeapFinger::Bone);
 		LUA->SetField( -2, "GetBone" );
 
+		LUA->PushCFunction(LeapFinger::Bones);
+		LUA->SetField( -2, "GetBones" );
+
 		LUA->PushCFunction( LeapFinger::Direction );
 		LUA->SetField( -2, "Direction" );
 
@@ -127,6 +130,24 @@ int LeapFinger::Bone( lua_State *state ) {
 	LeapBone::Push( state, new Leap::Bone( finger->bone( ( Bone::Type ) ( ( int ) LUA->CheckNumber() ) ) ) );
 	return 1;
 }
+
+int LeapFinger::Bones( lua_State *state ) {
+	Finger *finger = Get( state );
+	if ( !finger ) return 0;
+
+	LUA->CreateTable();
+
+	for ( int i = 0; i < 4 ; i++ ) 
+	{
+		Leap::Bone *bone = new Leap::Bone( finger->bone( (Leap::Bone::Type) i ) );
+		LUA->PushNumber( i + 1 );
+		LeapBone::Push( state, bone );
+		LUA->SetTable( -3 );
+	}
+
+	return 1;
+}
+
 
 int LeapFinger::Direction( lua_State *state ) {
 	Finger *finger = Get( state );
