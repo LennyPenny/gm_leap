@@ -53,9 +53,6 @@ void LeapFinger::DefineMeta( lua_State *state )
 		LUA->PushCFunction( LeapFinger::IsValid );
 		LUA->SetField( -2, "IsValid" );
 
-		LUA->PushCFunction( LeapFinger::JointPosition );
-		LUA->SetField( -2, "JoinPosition" );
-
 		LUA->PushCFunction( LeapFinger::Length );
 		LUA->SetField( -2, "Length" );
 
@@ -199,15 +196,6 @@ int LeapFinger::IsValid( lua_State *state ) {
 	if ( !finger ) return 0;
 
 	LUA->PushBool( finger->isValid() );
-
-	return 1;
-}
-
-int LeapFinger::JointPosition( lua_State *state ) {
-	Finger *finger = Get( state );
-	if ( !finger ) return 0;
-
-	//TODO
 
 	return 1;
 }
