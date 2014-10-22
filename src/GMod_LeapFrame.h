@@ -16,6 +16,8 @@ namespace GModLeap
 		void Push( lua_State *state , Leap::Frame *frame );
 
 		int tostring( lua_State *state );
+		int gc( lua_State *state );
+
 		int CurrentFramesPerSecond( lua_State *state );
 		int Gestures( lua_State *state );
 		int Hands( lua_State *state );

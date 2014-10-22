@@ -27,6 +27,9 @@ void LeapFinger::DefineMeta( lua_State *state )
 		LUA->PushString( "LeapFinger" );
 		LUA->SetField( -2 , "__type" );
 
+		LUA->PushCFunction( LeapFinger::gc );
+		LUA->SetField( -2, "__gc" );
+
 		LUA->PushCFunction(LeapFinger::Bone);
 		LUA->SetField( -2, "GetBone" );
 
@@ -121,6 +124,15 @@ int LeapFinger::tostring( lua_State *state) {
 
 	return 1;
 }
+
+int LeapFinger::gc( lua_State *state ) {
+	Finger *finger = Get( state );
+	if ( !finger ) return 0;
+
+	delete[] finger;
+
+	return 1;
+};
 
 
 int LeapFinger::Bone( lua_State *state ) {

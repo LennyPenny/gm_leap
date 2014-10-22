@@ -26,6 +26,9 @@ void LeapBone::DefineMeta( lua_State *state ) {
 		LUA->PushString( "LeapBone" );
 		LUA->SetField( -2, "__type" );
 
+		LUA->PushCFunction( LeapBone::gc );
+		LUA->SetField( -2, "__gc" );
+
 		LUA->PushCFunction( LeapBone::Basis );
 		LUA->SetField( -2, "Basis" );
 
@@ -88,6 +91,15 @@ int LeapBone::tostring( lua_State *state ) {
 
 	return 1;
 }
+
+int LeapBone::gc( lua_State *state ) {
+	Bone *bone= Get( state );
+	if ( !bone ) return 0;
+
+	delete[] bone;
+
+	return 1;
+};
 
 int LeapBone::Basis( lua_State *state ) {
 	Bone *bone = Get( state );

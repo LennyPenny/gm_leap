@@ -21,6 +21,9 @@ void LeapFrame::DefineMeta( lua_State * state )
 		LUA->PushString( "LeapFrame" );
 		LUA->SetField( -2 , "__type" );
 
+		LUA->PushCFunction( LeapFrame::gc );
+		LUA->SetField( -2, "__gc" );
+
 		LUA->PushCFunction( LeapFrame::Hands );
 		LUA->SetField( -2 , "GetHands" );
 
@@ -70,6 +73,15 @@ int LeapFrame::tostring( lua_State *state ) {
 
 	return 1;
 }
+
+int LeapFrame::gc( lua_State *state ) {
+	Frame *frame = Get( state );
+	if ( !frame ) return 0;
+	
+	delete[] frame;
+
+	return 1;
+};
 
 int LeapFrame::CurrentFramesPerSecond( lua_State *state ) {
 	Frame *frame = Get( state );

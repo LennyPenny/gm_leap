@@ -27,6 +27,9 @@ void LeapHand::DefineMeta( lua_State *state)
 		LUA->PushString( "LeapHand" );
 		LUA->SetField( -2 , "__type" );
 
+		LUA->PushCFunction( LeapHand::gc );
+		LUA->SetField( -2, "__gc" );
+
 		LUA->PushCFunction( LeapHand::Arm );
 		LUA->SetField( -2, "Arm" );
 
@@ -166,6 +169,15 @@ int LeapHand::tostring( lua_State *state ) {
 
 	return 1;
 }
+
+int LeapHand::gc( lua_State *state ) {
+	 Hand* hand = Get( state );
+	if ( !hand ) return 0;
+
+	delete[] hand;
+
+	return 1;
+};
 
 int LeapHand::Arm( lua_State *state ) {
 	Hand *hand = Get(state);

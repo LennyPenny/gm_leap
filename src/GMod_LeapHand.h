@@ -15,6 +15,7 @@ namespace GModLeap
 		void Push( lua_State *state, Leap::Hand *hand );
 
 		int tostring( lua_State *state );
+		int gc( lua_State *state );
 
 		int Arm( lua_State *state );
 		int Basis( lua_State *state );
