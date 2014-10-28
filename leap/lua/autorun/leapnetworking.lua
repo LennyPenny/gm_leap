@@ -216,6 +216,7 @@ if CLIENT then
 		end
 		
 	end )
+	
 else
 	
 	local function CreateLeapController( ply )
@@ -283,11 +284,11 @@ else
 				frame.Hands[i].Arm = {}
 				frame.Hands[i].Arm.IsValid = tobool( net.ReadBit() )
 				if frame.Hands[i].Arm.IsValid then
-					frame.Hands[i].Arm.Center = net.ReadVector()
-					frame.Hands[i].Arm.Direction = net.ReadNormal()
+					frame.Hands[i].Arm.ArmPosition = net.ReadVector()
+					frame.Hands[i].Arm.ArmDirection = net.ReadNormal()
 					frame.Hands[i].Arm.ElbowPosition = net.ReadVector()
 					frame.Hands[i].Arm.WristPosition = net.ReadVector()
-					frame.Hands[i].Arm.Width = net.ReadFloat()
+					frame.Hands[i].Arm.ArmWidth = net.ReadFloat()
 				end
 				]]
 				

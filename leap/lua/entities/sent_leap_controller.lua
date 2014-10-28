@@ -182,8 +182,32 @@ if SERVER then
 				palmpos , palmang = LocalToWorld( palmpos , palmang  , plypos , plyang )
 
 				if IsValid( palment ) then
-					palment:SetIsLeft( ( i - 1 ) == HAND_LEFT )
+					palment:SetIsLeft( frame.Hands[i].IsLeft )
 					palment:Update( palmpos , palmang , FrameTime() , self.OlderFrameReceiveTime , self.LastFrameReceiveTime )
+				end
+				
+				if frame.Hands[i].Arm and frame.Hands[i].Arm.IsValid then
+					local armpos = frame.Hands[i].ArmPosition * self:GetScale()
+					local armang = frame.Hands[i].ArmDirection:Angle()
+					local armwidth = frame.Hands[i].Arm.ArmWidth
+					local armlength = ( frame.Hands[i].Arm.ElbowPosition - frame.Hands[i].Arm.WristPosition ):Length()
+					local arment = self.LeapShadowControllers[i - 1].Arm
+					
+					if not IsValid( arment ) then
+						local minb = Vector( 2 , armwidth * 0.5 , armlength * 0.5 )
+						local maxbb = minb * -1
+						
+						arment = self:CreatePhysShadow( minb , maxbb )
+						self.LeapShadowControllers[i - 1].Arm = arment
+					end
+					
+					armpos , armang = LocalToWorld( armpos , armang , plypos , plyang )
+					
+					if IsValid( arment ) then
+						arment:SetIsLeft( frame.Hands[i].IsLeft )
+						arment:Update( armpos , armang , FrameTime() , self.OlderFrameReceiveTime , self.LastFrameReceiveTime )
+					end
+				
 				end
 				
 				for j=1, frame.Hands[i].FingersNumber do
@@ -214,7 +238,7 @@ if SERVER then
 						
 						if IsValid( boneent ) then
 							boneent:SetGrabStrength( frame.Hands[i].GrabStrength )
-							boneent:SetIsLeft( ( i - 1 ) == HAND_LEFT )
+							boneent:SetIsLeft( frame.Hands[i].IsLeft )
 							boneent:Update( bonepos , boneang , FrameTime() , self.OlderFrameReceiveTime , self.LastFrameReceiveTime )
 							
 							--debugoverlay.BoxAngles( boneent:GetPos() , boneent:GetMinSize(), boneent:GetMaxSize(), boneent:GetAngles() , 0.15 )
