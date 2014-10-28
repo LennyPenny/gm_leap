@@ -71,8 +71,7 @@ function ENT:Update( pos , ang , delta , olderlastframereceivedtime , lastframer
 	if not IsValid( physobj ) then return end
 	
 	physobj:Wake()
-	physobj:SetMass( 300 * self:GetScale() )
-	physobj:EnableGravity( false )
+	physobj:SetMass( 500 * self:GetScale() )
 	physobj:UpdateShadow( pos , ang , delta )
 end
 

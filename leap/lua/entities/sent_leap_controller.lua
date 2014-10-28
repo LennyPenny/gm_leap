@@ -154,6 +154,9 @@ end
 if SERVER then
 
 	function ENT:Think()
+		
+		self:InterpCurFrame()
+		
 		local frame = self.CurrentFrame
 		if not frame then return end
 		
@@ -233,6 +236,7 @@ if SERVER then
 							if length ~= 0 and width ~= 0 then
 								self.LeapShadowControllers[i - 1].Fingers[j - 1].Bones[k - 1].Bone = self:CreatePhysShadow( maxbb , minbb )
 							end
+							
 							boneent = self.LeapShadowControllers[i - 1].Fingers[j - 1].Bones[k - 1].Bone
 						end
 						
@@ -249,6 +253,13 @@ if SERVER then
 		end
 		self:NextThink( CurTime() + engine.TickInterval() )
 		return true
+	end
+	
+	--this function should interpolate the positions and angles on the current frame based on the last frame received
+	--and use the time difference from the last frame receive
+	function ENT:InterpCurFrame()
+		local rate = self.LastFrameReceiveTime - self.OlderFrameReceiveTime
+		
 	end
 	
 	

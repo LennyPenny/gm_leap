@@ -12,18 +12,18 @@ SHADOWTYPE_ARM = 2
 HAND_LEFT = 0
 HAND_RIGHT = 1
 
-FINGER_TYPE_THUMB 	= 0
+FINGER_TYPE_THUMB 		= 0
 FINGER_TYPE_INDEX		= 1
-FINGER_TYPE_MIDDLE	= 2
+FINGER_TYPE_MIDDLE		= 2
 FINGER_TYPE_RING		= 3
 FINGER_TYPE_PINKY		= 4
 
-BONE_TYPE_METACARPAL			= 0
+BONE_TYPE_METACARPAL		= 0
 BONE_TYPE_PROXIMAL			= 1
 BONE_TYPE_INTERMEDIATE		= 2
-BONE_TYPE_DISTAL				= 3
+BONE_TYPE_DISTAL			= 3
 
-GESTURE_TYPE_INVALID			= 0
+GESTURE_TYPE_INVALID		= 0
 GESTURE_TYPE_SWIPE			= 1
 GESTURE_TYPE_CIRCLE			= 2
 GESTURE_TYPE_SCREEN_TAP		= 3
@@ -34,7 +34,7 @@ if CLIENT then
 	local leap_convars = {
 		scale = CreateConVar( "cl_leap_scale" , "0.1" , FCVAR_ARCHIVE + FCVAR_USERINFO ),
 		updaterate = CreateConVar( "cl_leap_updaterate" , "0.1" , FCVAR_ARCHIVE + FCVAR_USERINFO ),
-		fakebot = CreateConVar( "cl_leap_fakebotid" , "-1" ),
+		fakebot = CreateConVar( "cl_leap_fakebotid" , "-1" ),	--this will be removed when I'm done testing the networking
 		posefromfile = CreateConVar( "cl_leap_posefromfile" , "" , FCVAR_ARCHIVE + FCVAR_USERINFO ),
 	}
 	
@@ -57,11 +57,12 @@ if CLIENT then
 	end
 	
 	local function HasLeapMotion()
+		
 		if not leap then
 			return false
 		end
 		
-		--we count the player as having the leap if he's using a serialized frame
+		--we count the player as having the leap if he's using a serialized frame, the module still needs to be loaded though
 		if leap_convars.posefromfile and #leap_convars.posefromfile > 0 then
 			return true
 		end
@@ -89,6 +90,7 @@ if CLIENT then
 				net.WriteFloat( v:GrabStrength() )
 				net.WriteFloat( v:PalmWidth() )
 				
+				--TODO:enable once we have arms support
 				--[[
 				local arm = v:GetArm()
 				net.WriteBit( arm:IsValid() )
@@ -167,7 +169,9 @@ if CLIENT then
 			frame = leap.Frame()
 		end
 		
-		if not IsValid( frame ) then return end
+		if not IsValid( frame ) then 
+			return
+		end
 		
 		net.Start( "leap" , true )	--send an unreliable message
 			
@@ -176,11 +180,7 @@ if CLIENT then
 			local botid = leap_convars.fakebot:GetInt()
 			local botent = Player( botid )
 			
-			if IsValid( botent ) then
-				net.WriteEntity( botent )
-			else
-				net.WriteEntity( NULL )
-			end
+			net.WriteEntity( IsValid( botent ) and botent or NULL )
 			
 			LeapWriteFrameData( frame )
 			leap_lastframe = frame
@@ -197,7 +197,7 @@ if CLIENT then
 		local path = args[1]
 		
 		if not path then
-			MsgN( "leap_writeframe requires a path with a .txt extension at the end" )
+			MsgN( "leap_writeframe <filename.txt>" )
 			return
 		end
 			
@@ -280,6 +280,7 @@ else
 				frame.Hands[i].GrabStrength = net.ReadFloat()
 				frame.Hands[i].PalmWidth = net.ReadFloat()
 				
+				--TODO:enable once we have arms support
 				--[[
 				frame.Hands[i].Arm = {}
 				frame.Hands[i].Arm.IsValid = tobool( net.ReadBit() )
