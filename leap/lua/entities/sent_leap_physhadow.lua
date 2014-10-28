@@ -22,6 +22,7 @@ function ENT:Initialize()
 end
 
 function ENT:SetupDataTables()
+	self:NetworkVar( "Int" , 0 , "ShadowType" )
 	self:NetworkVar( "Float" , 0 , "Scale" )
 	
 	self:NetworkVar( "Vector" , 0 , "MinBounds" )

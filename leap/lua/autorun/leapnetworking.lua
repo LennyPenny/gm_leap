@@ -3,6 +3,12 @@ if SERVER then
 	util.AddNetworkString( "leap" )
 end
 
+--TODO: add these defines to the leap table on the server, and merge them on the leap module table on the client
+
+SHADOWTYPE_PALM = 0
+SHADOWTYPE_FINGERBONE = 1
+SHADOWTYPE_ARM = 2
+
 HAND_LEFT = 0
 HAND_RIGHT = 1
 
@@ -17,12 +23,12 @@ BONE_TYPE_PROXIMAL			= 1
 BONE_TYPE_INTERMEDIATE		= 2
 BONE_TYPE_DISTAL				= 3
 
-
 GESTURE_TYPE_INVALID			= 0
 GESTURE_TYPE_SWIPE			= 1
 GESTURE_TYPE_CIRCLE			= 2
 GESTURE_TYPE_SCREEN_TAP		= 3
-GESTURE_TYPE_KEY_TAP			= 4
+GESTURE_TYPE_KEY_TAP		= 4
+
 
 if CLIENT then
 	local leap_convars = {
@@ -33,8 +39,8 @@ if CLIENT then
 	}
 	
 	local leap_updatethrottle = 0
-	
 	local leap_version = ""
+	local leap_lastframe = nil
 	
 	if system.IsWindows() then
 		leap_version = "win32.dll"
@@ -51,7 +57,16 @@ if CLIENT then
 	end
 	
 	local function HasLeapMotion()
-		return leap and leap.IsConnected()
+		if not leap then
+			return false
+		end
+		
+		--we count the player as having the leap if he's using a serialized frame
+		if leap_convars.posefromfile and #leap_convars.posefromfile > 0 then
+			return true
+		end
+		
+		return leap.IsConnected()
 	end
 	
 	local function LeapWriteFrameData( frame )
@@ -110,6 +125,15 @@ if CLIENT then
 	
 	local function LeapGetFrameFromFile( path )
 		local frame = nil
+		-- read the file from "DATA" in binary mode and then feed the string to leap.DeserializeFrame()
+		
+		local framefile = file.Open( path , "rb" , "DATA" )
+		
+		if framefile then
+			local str = framefile:Read( framefile:Size() )
+			frame = leap.DeserializeFrame( str )
+			framefile:Close()
+		end
 		
 		return frame
 	end
@@ -135,7 +159,11 @@ if CLIENT then
 		
 		if serializedframepath and #serializedframepath > 1 then
 			frame = LeapGetFrameFromFile( serializedframepath )
-		else
+		end
+		
+		--default back to getting it from the leap
+		
+		if not IsValid( frame ) then
 			frame = leap.Frame()
 		end
 		
@@ -155,19 +183,41 @@ if CLIENT then
 			end
 			
 			LeapWriteFrameData( frame )
+			leap_lastframe = frame
 		net.SendToServer()
 
 	end
-	
-	
 	hook.Add( "Think" , "LeapMotionThink" , LeapMotionThink )
 	
+	concommand.Add( "leap_writeframe" , function( ply , cmd , args , fullstr )
+		if not HasLeapMotion() then
+			return
+		end
+		
+		local path = args[1]
+		
+		if not path then
+			MsgN( "leap_writeframe requires a path with a .txt extension at the end" )
+			return
+		end
+			
+		local currentframe = leap_lastframe
+		
+		if not IsValid( currentframe ) then
+			return
+		end
+		
+		local serializedframe = currentframe:Serialize()
+		
+		local framefile = file.Open( path , "wb" , "DATA" )
+		if framefile then
+			framefile:Write( serializedframe )
+			framefile:Close()
+		end
+		
+	end )
 else
-
-	util.AddNetworkString( "LeapMotion" )
 	
-	--Receive the client messages about the leap motion here
-	--Try to lerp the values the client gave you 
 	local function CreateLeapController( ply )
 		local controller = ents.Create( "sent_leap_controller" )
 		if not IsValid( controller ) then return end
@@ -187,7 +237,7 @@ else
 	
 	local function AnalyzeLeapData( ply , framedata )
 		--TODO: clamp all the values we've got from the framedata
-		--otherwise people might maliciously exploit it and send their own positions and fuck shit
+		--otherwise people might maliciously exploit it and send their own positions and fuck shit up with global positions
 		
 		--there's no other way to go with this, since we're pretty much trusting the client anyway
 		
