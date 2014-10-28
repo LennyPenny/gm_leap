@@ -14,8 +14,6 @@ function ENT:Initialize()
 		if IsValid( self:GetPhysicsObject() ) then
 			self:GetPhysicsObject():SetMaterial( "flesh" )
 		end
-		
-		self.TouchingPhysobj = nil
 	else
 		self:SetRenderBounds( self:GetMinSize() , self:GetMaxSize() )
 	end
@@ -78,45 +76,20 @@ function ENT:Update( pos , ang , delta , olderlastframereceivedtime , lastframer
 end
 
 function ENT:Think()
-	if SERVER then
-		if self.TouchingPhysobjForget and self.TouchingPhysobjForget < CurTime() then
-			self.TouchingPhysobj = nil
-			self.TouchingPhysobjForget = nil
-		end
-	end
 end
 
 function ENT:PhysicsUpdate()
-	--[[
-	if IsValid( self.TouchingPhysobj ) and self:GetGrabStrength() > 0.3 then
-		self.TouchingPhysobj:Wake()
-		
-		local pos , ang = LocalToWorld( self.TouchingPhysobjLocalpos , self.TouchingPhysobjLocalang , self:GetPos() , self:GetAngles() )
-		self.TouchingPhysobj:UpdateShadow( pos , ang , FrameTime() )
-	end
-	]]
 end
 
 function ENT:PhysicsCollide( data , physobj )
-	--[[
-	local theirphysobj = data.HitObject
-	
-	self.TouchingPhysobj = data.HitObject
-	
-	if not self:GetController():CanGrab( data , self ) then
-		self.TouchingPhysobj = nil
-		return
-	end
-	--self.TouchingPhysobjForget = CurTime() + 2
-	self.TouchingPhysobjLocalpos = self.TouchingPhysobj:WorldToLocal( data.HitPos )
-	self.TouchingPhysobjLocalang = self.TouchingPhysobj:GetAngles()
-	]]
-end
 
-ENT.Mat = Material( "models/wireframe" )
-function ENT:Draw()
-	local cmin , cmax = self:GetCollisionBounds()
-	
-	render.SetMaterial( self.Mat )
-	render.DrawBox( self:GetPos(), self:GetAngles(), cmin, cmax, color_white, true )
+if CLIENT then
+	ENT.Mat = Material( "models/wireframe" )
+
+	function ENT:Draw()
+		local cmin , cmax = self:GetCollisionBounds()
+		
+		render.SetMaterial( self.Mat )
+		render.DrawBox( self:GetPos(), self:GetAngles(), cmin, cmax, color_white, true )
+	end
 end

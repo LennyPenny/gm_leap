@@ -3,8 +3,6 @@ if SERVER then
 	util.AddNetworkString( "leap" )
 end
 
-local INT_BITS = 8
-
 HAND_LEFT = 0
 HAND_RIGHT = 1
 
@@ -27,15 +25,28 @@ GESTURE_TYPE_SCREEN_TAP		= 3
 GESTURE_TYPE_KEY_TAP			= 4
 
 if CLIENT then
-	local leap_scale = CreateConVar( "cl_leap_scale" , 0.1 , FCVAR_ARCHIVE + FCVAR_USERINFO )
-	local leap_updaterate = CreateConVar( "cl_leap_updaterate" , 0.1 , FCVAR_ARCHIVE + FCVAR_USERINFO )
-	
-	local leap_fakebothand = CreateConVar( "cl_leap_fakebotid" , -1 , FCVAR_USERINFO )
+	local leap_convars = {
+		scale = CreateConVar( "cl_leap_scale" , "0.1" , FCVAR_ARCHIVE + FCVAR_USERINFO ),
+		updaterate = CreateConVar( "cl_leap_updaterate" , "0.1" , FCVAR_ARCHIVE + FCVAR_USERINFO ),
+		fakebot = CreateConVar( "cl_leap_fakebotid" , "-1" ),
+		posefromfile = CreateConVar( "cl_leap_posefromfile" , "" , FCVAR_ARCHIVE + FCVAR_USERINFO ),
+	}
 	
 	local leap_updatethrottle = 0
-	--Code to send and debug the leap motion to the server here
 	
-	if file.Exists( "lua/bin/gmcl_leap_win32.dll" , "GAME" ) then 
+	local leap_version = ""
+	
+	if system.IsWindows() then
+		leap_version = "win32.dll"
+	elseif system.IsOSX() then
+		leap_version = ""	--TODO: at some point
+	elseif system.IsLinux() then
+		leap_version = ""	--TODO: at some point
+	else
+		error( "OS not recognized by gmod?" )
+	end
+	
+	if file.Exists( "lua/bin/gmcl_leap_" .. leap_version , "GAME" ) then 
 		require( "leap" )
 	end
 	
@@ -43,61 +54,34 @@ if CLIENT then
 		return leap and leap.IsConnected()
 	end
 	
-	
-	--[[
-		
-		FINGER_TYPE_THUMB
-		FINGER_TYPE_INDEX
-		FINGER_TYPE_MIDDLE
-		FINGER_TYPE_RING
-		FINGER_TYPE_PINKY
-		
-		BONE_TYPE_METACARPAL
-		BONE_TYPE_PROXIMAL
-		BONE_TYPE_INTERMEDIATE
-		BONE_TYPE_DISTAL
-
-		GESTURE_TYPE_INVALID
-		GESTURE_TYPE_SWIPE
-		GESTURE_TYPE_CIRCLE
-		GESTURE_TYPE_SCREEN_TAP
-		GESTURE_TYPE_KEY_TAP
-	]]
-	
 	local function LeapWriteFrameData( frame )
-		--net.WriteInt( frame:GetFrameNumber() , INT_BITS ) --write frame number
 		
 		local hands = frame:GetHands()
-		local handsnumber = math.Clamp( #hands , 0 , 2 )--write number of hands, clamp it first though so we don't send extra hands
+		local handsnumber = #hands
 		
-		net.WriteInt( handsnumber, INT_BITS )
+		net.WriteUInt( handsnumber, 8 )	--a byte is fine
 		
 		for i , v in pairs( hands ) do
 			
-			--ignore extra hands! we don't care if vinh wants to interfere with it when we're playing in front of him ( hot wordplay )
-			if i > 2 then continue end
-			
-			--write if it's valid
 			net.WriteBit( IsValid( v ) )
 			
 			if IsValid( v ) then
-				net.WriteBit( v:IsLeft() ) --write if it's right
-				net.WriteVector( v:PalmPosition() )--write position
-				net.WriteNormal( v:PalmNormal() )--write direction
-				net.WriteVector( v:PalmVelocity() )--write velocity
-				net.WriteFloat( v:PinchStrength() )--write pinch strength
-				net.WriteFloat( v:GrabStrength() )--write grab strength
-				net.WriteFloat( v:PalmWidth() )	--write palm width
+				net.WriteBit( v:IsLeft() )
+				net.WriteVector( v:PalmPosition() )
+				net.WriteNormal( v:PalmNormal() )
+				net.WriteVector( v:PalmVelocity() )
+				net.WriteFloat( v:PinchStrength() )
+				net.WriteFloat( v:GrabStrength() )
+				net.WriteFloat( v:PalmWidth() )
 				
 				local fingers = v:GetFingers()
-				net.WriteInt( #fingers, INT_BITS ) --write finger numbers, 5 usually
-				
+				net.WriteUInt( #fingers, 8 )	--a byte is fine
 				
 				for j,k in pairs( fingers ) do
 					
 					local bones = k:GetBones()
 					
-					net.WriteInt( #bones , INT_BITS )
+					net.WriteUInt( #bones , 8 )	-- a byte is fine
 					
 					for _ , _k in pairs( bones ) do
 						
@@ -105,14 +89,17 @@ if CLIENT then
 						net.WriteNormal( _k:Direction() )
 						net.WriteFloat( _k:Length() )
 						net.WriteFloat( _k:Width() )
+						
 					end
-								
 				end
-				
-			
 			end
-
 		end
+	end
+	
+	local function LeapGetFrameFromFile( path )
+		local frame = nil
+		
+		return frame
 	end
 	
 	local function LeapMotionThink()
@@ -124,31 +111,38 @@ if CLIENT then
 			return
 		end
 		
-		leap_updatethrottle = CurTime() + math.Clamp( leap_updaterate:GetFloat() , 0.01 , 1 )
+		leap_updatethrottle = CurTime() + math.Clamp( leap_convars.updaterate:GetFloat() , 0.01 , 1 )
+		
 		if not HasLeapMotion() then
 			return
 		end
 		
+		local frame = nil
 		
+		local serializedframepath = leap_convars.posefromfile:GetString()
 		
-		--this way if the updaterate is 0 or the same as CurTime it will still go trough
-		
-		local frame = leap.Frame()
+		if serializedframepath and #serializedframepath > 1 then
+			frame = LeapGetFrameFromFile( serializedframepath )
+		else
+			frame = leap.Frame()
+		end
 		
 		if not IsValid( frame ) then return end
 		
-		net.Start( "leap" , true )--do the net start shit here
-		local botid = leap_fakebothand:GetInt()
-		local botent = Player( botid )
-		
-		if IsValid( botent ) then
-			net.WriteEntity( botent )
-		else
-			net.WriteEntity( NULL )
-		end
-		
-		LeapWriteFrameData( frame )
-		
+		net.Start( "leap" , true )
+			
+			--"redirect" the command to the bot, this is also checked serverside
+			
+			local botid = leap_convars.fakebot:GetInt()
+			local botent = Player( botid )
+			
+			if IsValid( botent ) then
+				net.WriteEntity( botent )
+			else
+				net.WriteEntity( NULL )
+			end
+			
+			LeapWriteFrameData( frame )
 		net.SendToServer()
 
 	end
@@ -179,11 +173,16 @@ else
 		return IsValid( ply._LeapController )
 	end
 	
-	local function AnalyzeLeapData( ply , data )
+	local function AnalyzeLeapData( ply , framedata )
+		--TODO: clamp all the values we've got from the framedata
+		--otherwise people might maliciously exploit it and send their own positions and fuck shit
+		
+		--there's no other way to go with this, since we're pretty much trusting the client anyway
 		
 		if HasLeapController( ply ) then
-			ply._LeapController:AnalyzeLeapData( data )
+			ply._LeapController:AnalyzeLeapData( framedata )
 		end
+		
 	end
 	
 	local function LeapMotionReceive( len , ply )
@@ -202,8 +201,7 @@ else
 		end
 		
 		local frame = {}
-		--frame.FrameNumber = net.ReadInt( INT_BITS )
-		frame.HandsNumber = net.ReadInt( INT_BITS )
+		frame.HandsNumber = net.ReadUInt( 8 )	--a byte is fine
 		frame.Hands = {}
 		
 		for i=1,frame.HandsNumber do
@@ -219,11 +217,11 @@ else
 				frame.Hands[i].GrabStrength = net.ReadFloat()
 				frame.Hands[i].PalmWidth = net.ReadFloat()
 				
-				frame.Hands[i].FingersNumber = 	net.ReadInt( INT_BITS )
+				frame.Hands[i].FingersNumber = 	net.ReadUInt( 8 )	--a byte is fine
 				frame.Hands[i].Fingers = {}
 				for j = 1 , frame.Hands[i].FingersNumber do
 					frame.Hands[i].Fingers[j] = {}
-					frame.Hands[i].Fingers[j].BonesNumber = net.ReadInt( INT_BITS )
+					frame.Hands[i].Fingers[j].BonesNumber = net.ReadUInt( 8 )	--a byte is fine
 					frame.Hands[i].Fingers[j].Bones = {}
 					
 					for k=1,frame.Hands[i].Fingers[j].BonesNumber do

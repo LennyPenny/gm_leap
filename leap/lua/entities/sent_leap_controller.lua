@@ -3,7 +3,6 @@ AddCSLuaFile()
 ENT.Type             = "anim"
 ENT.Base             = "base_anim"
 ENT.RenderGroup     = RENDERGROUP_OPAQUE
-
 --[[
 
 	["ValveBiped.Bip01_L_Hand"]=HAND_LEFT,
@@ -67,15 +66,17 @@ local BONE_TYPE_INTERMEDIATE		= 3
 local BONE_TYPE_DISTAL				= 4
 ]]
 
+--Used when each bone is created to assign them to a bone in max's c_hands model
+
 ENT.LeapToValveBipedBones = {
 	
 	[HAND_LEFT] = {
-		bone = "ValveBiped.Bip01_L_Hand",
+		bone = "ValveBiped.Bip01_L_Hand",	--technically for the palm
 		Fingers = {
 			[FINGER_TYPE_THUMB] = {
 				Bones = {
 					[BONE_TYPE_METACARPAL] = {
-					}
+					},
 				}
 			},
 						
@@ -95,66 +96,47 @@ ENT.LeapToValveBipedBones = {
 
 function ENT:Initialize()
 	if SERVER then
+		self:SetSolid( SOLID_NONE )
+		self:SetMoveType( MOVETYPE_NONE )
 		self:SetNoDraw( true )
+		
 		self.LastFrame = nil
 		self.LastFrameReceiveTime = 0
 		self.OlderFrameReceiveTime = 0
 		self.LastShadow = 0
-		
 		self.CurrentFrame = nil
-		--the motion controller crap needs a valid physobj, because garry, it usually doesn't even need to
+		self.GrabbedPhysObj = nil
 		
-		self:SetSolid( SOLID_NONE )
-		self:SetMoveType( MOVETYPE_NONE )
 		self:SetScale( math.Clamp( self:GetScale() , 0.1 , 3 ) )
+		
+		
+		
+		--future proofing for when the leap supports more than 2 hands
 		self.LeapShadowControllers = {}
-		local conv = self.LeapToValveBipedBones
-		for i = HAND_LEFT , HAND_RIGHT do
+		for i = 0 , 3 do
 			self.LeapShadowControllers[i] = {}
-			--self.LeapShadowControllers[i].Hand = self:CreatePhysShadow( nil , nil , conv[i].bone )
-			
-			if IsValid( self.LeapShadowControllers[i].Hand ) then
-				self.LeapShadowControllers[i].Hand:SetIsLeft( i == HAND_LEFT )
-			end
-			
 			self.LeapShadowControllers[i].Fingers = {}
-			
 			for j = FINGER_TYPE_THUMB , FINGER_TYPE_PINKY do
 				self.LeapShadowControllers[i].Fingers[j] = {}
 				self.LeapShadowControllers[i].Fingers[j].Bones = {}
 				for k = BONE_TYPE_METACARPAL , BONE_TYPE_DISTAL do
-					--local minb , maxb = 
 					self.LeapShadowControllers[i].Fingers[j].Bones[k] = {}
-					--self.LeapShadowControllers[i].Fingers[j].Bones[k].Bone = self:CreatePhysShadow( nil , nil , "" )--conv[i].Fingers[j].Bones[k].bone )
-					
-					if IsValid( self.LeapShadowControllers[i].Fingers[j].Bones[k].Bone ) then
-						self.LeapShadowControllers[i].Fingers[j].Bones[k].Bone:SetIsLeft( i == HAND_LEFT )
-						
-					end
-					
 				end
 			end
 		end
 		
+		--TODO:
+		--[[
 		local hands = ents.Create( "sent_leap_hands" )
-		--hands:SetParent( self:GetParent() )
+		hands:SetParent( self:GetParent() )
 		hands:SetOwner( self:GetParent() )
-		--hands:SetTransmitWithParent( true )
+		hands:SetTransmitWithParent( true )
 		hands:SetController( self )
 		hands:SetLocalPos( vector_origin )
 		hands:Spawn()
 		
 		self:SetHandsEnt( hands )
-	else
-		--create the hands clientside model with the base c_hands
-		--it'd probably be better if we actually hook in the buildbonepositions callback on the hands entity
-		--although now that clientside models are garbage collected, they're not reliable anymore.
-		--[[
-		self:AddCallback("BuildBonePositions",function (self)
-			self:BuildBonePositions()
-		end)
 		]]
-		
 	end
 end
 
@@ -169,10 +151,8 @@ function ENT:SetupDataTables()
 	end
 end
 
-function ENT:Draw()
-end
-
 if SERVER then
+
 	function ENT:Think()
 		local frame = self.CurrentFrame
 		if not frame then return end
@@ -191,14 +171,14 @@ if SERVER then
 				local palment = self.LeapShadowControllers[i - 1].Hand
 				
 				if not IsValid( palment ) then
-					local minb = Vector( 2 * 0.5, palmwith * 0.5, palmwith * 0.5)
+					local minb = Vector( 2 * 0.5 , palmwith * 0.5 , palmwith * 0.5 )
 					local maxbb = minb * -1
 					
+					--palm direction is fucked up?
 					--palment = self:CreatePhysShadow( minb , maxbb )
 					self.LeapShadowControllers[i - 1].Hand = palment
 				end
 				
-				--these are local positions, move them to the player position, for now it's not needed
 				palmpos , palmang = LocalToWorld( palmpos , palmang  , plypos , plyang )
 
 				if IsValid( palment ) then
@@ -213,30 +193,25 @@ if SERVER then
 						local boneent = self.LeapShadowControllers[i - 1].Fingers[j - 1].Bones[k - 1].Bone
 						local length = frame.Hands[i].Fingers[j].Bones[k].BoneLength * self:GetScale()
 						local width = frame.Hands[i].Fingers[j].Bones[k].BoneWidth * self:GetScale()
-						--localtoworld these to the palm position
+						
 						bonepos , boneang = LocalToWorld( bonepos , boneang  , plypos , plyang )
 						
 
 						if not IsValid( boneent ) then
-							local minb = Vector(length * .5, width *.5, width*.5)
+							local minb = Vector( length * .5 , width *.5 , width*.5 )
 							local maxb = minb * -1
 							--debugoverlay.BoxAngles( bonepos , minb, maxb, boneang , 0.15 )
 							
 							local maxbb = Vector( frame.Hands[i].Fingers[j].Bones[k].BoneLength * 0.5 , frame.Hands[i].Fingers[j].Bones[k].BoneWidth * 0.5 , frame.Hands[i].Fingers[j].Bones[k].BoneWidth * 0.5 )
 							local minbb = maxbb * -1
 							
-							--if j == 1 and ( k - 1 ) == BONE_TYPE_INTERMEDIATE then
-							
-							--else
+							--ignore bones that have 0 length or 0 width, happens with the metacarpal thumb bone
 							if length ~= 0 and width ~= 0 then
 								self.LeapShadowControllers[i - 1].Fingers[j - 1].Bones[k - 1].Bone = self:CreatePhysShadow( maxbb , minbb )
 							end
 							boneent = self.LeapShadowControllers[i - 1].Fingers[j - 1].Bones[k - 1].Bone
 						end
 						
-						--frame.Hands[i].Fingers[j].Bones[k].BonePosition
-						--frame.Hands[i].Fingers[j].Bones[k].BoneDirection
-						--self.LeapShadowControllers[i].Fingers[j].Bones[k].Bone
 						if IsValid( boneent ) then
 							boneent:SetGrabStrength( frame.Hands[i].GrabStrength )
 							boneent:SetIsLeft( ( i - 1 ) == HAND_LEFT )
@@ -251,64 +226,87 @@ if SERVER then
 		self:NextThink( CurTime() + engine.TickInterval() )
 		return true
 	end
-end
-
-function ENT:CreatePhysShadow( minb, maxb , handindex , fingertype , bonetype )
 	
-	local shadow = ents.Create( "sent_leap_physhadow" )
-	if not shadow then
-		return
+	
+	--TODO: called when the hand detects a pinch over the threshold
+	function ENT:OnPinch( value )
+	
 	end
 	
-	local bipedbone = nil
+	function ENT:OnPinchRelease( value )
 	
-	--Find the bone name from the hand index and bonetype
+	end
 	
-	if not fingertype or not bonetype then
-		if self.LeapToValveBipedBones[handindex] then
-			bipedbone = self.LeapToValveBipedBones[handindex].bone
+	--TODO: called when the hand detects a grab over the threshold
+	function ENT:OnGrab( value )
+	
+	end
+	
+	function ENT:OnGrabRelease( value )
+	
+	end
+	
+	function ENT:CreatePhysShadow( minb, maxb , handindex , fingertype , bonetype )
+		
+		local shadow = ents.Create( "sent_leap_physhadow" )
+		
+		if not shadow then
+			return
 		end
-	else
-		if self.LeapToValveBipedBones[handindex].Fingers[fingertype] and self.LeapToValveBipedBones[handindex].Fingers[fingertype].Bones[bonetype] then
-			bipedbone = self.LeapToValveBipedBones[handindex].Fingers[fingertype].Bones[bonetype].bone
+		
+		local bipedbone = nil
+		
+		--Find the bone name from the hand index and bonetype
+		
+		if not fingertype or not bonetype then
+			if self.LeapToValveBipedBones[handindex] then
+				bipedbone = self.LeapToValveBipedBones[handindex].bone
+			end
+		else
+			if self.LeapToValveBipedBones[handindex].Fingers[fingertype] and self.LeapToValveBipedBones[handindex].Fingers[fingertype].Bones[bonetype] then
+				bipedbone = self.LeapToValveBipedBones[handindex].Fingers[fingertype].Bones[bonetype].bone
+			end
 		end
+		
+		--self["SetLeapBone"..self.LastShadow + 1]( self , shadow )
+		shadow:SetOwner( self:GetOwner() )
+		shadow:SetMinBounds( minb )
+		shadow:SetMaxBounds( maxb )
+		shadow:SetPos( self:GetOwner():GetPos() )
+		shadow:SetScale( self:GetScale() )
+		shadow:SetController( self )
+		
+		if bipedbone then
+			shadow:SetAssociatedBone( bipedbone )
+		end
+		
+		shadow:Spawn()
+		
+		--[[
+		self.LastShadow = self.LastShadow + 1
+		
+		if self.LastShadow >= GMOD_MAXDTVARS then
+			self.LastShadow = 0
+		end
+		]]
+		
+		return shadow
 	end
-	
-	--self["SetLeapBone"..self.LastShadow + 1]( self , shadow )
-	shadow:SetOwner( self:GetOwner() )
-	shadow:SetMinBounds( minb )
-	shadow:SetMaxBounds( maxb )
-	--shadow:SetOwner( self:GetOwner() )
-	shadow:SetPos( self:GetOwner():GetPos() )
-	shadow:SetScale( self:GetScale() )
-	shadow:SetController( self )
-	if bipedbone then
-		shadow:SetAssociatedBone( bipedbone )
-	end
-	shadow:Spawn()
-	
-	--[[
-	self.LastShadow = self.LastShadow + 1
-	
-	if self.LastShadow >= GMOD_MAXDTVARS then
-		self.LastShadow = 0
-	end
-	]]
-	
-	return shadow
-end
 
-function ENT:AnalyzeLeapData( leapdata )
-	self.LastFrame = self.CurrentFrame
+	function ENT:AnalyzeLeapData( leapdata )
+		self.LastFrame = self.CurrentFrame
+		
+		self.CurrentFrame = leapdata
+		
+		self.OlderFrameReceiveTime = self.LastFrameReceiveTime
+		self.LastFrameReceiveTime = CurTime()
+	end
 	
-	self.CurrentFrame = leapdata
-	
-	self.OlderFrameReceiveTime = self.LastFrameReceiveTime
-	self.LastFrameReceiveTime = CurTime()
 end
 
 
 function ENT:GetAllPhysBones()
+
 	local tb = {}
 	
 	for i = 1 , GMOD_MAXDTVARS - 1 do
@@ -316,23 +314,4 @@ function ENT:GetAllPhysBones()
 	end
 	
 	return tb
-end
-
-function ENT:CanGrab( hitdata , askingbone )
-	
-	if hitdata.HitEntity:GetClass() == "sent_leap_physhadow" then
-		return false
-	end
-	
-	for i ,v in pairs( self:GetAllPhysBones() ) do
-		if v ~= askingbone and v.TouchingPhysobj == hitdata.HitObject then
-			return false
-		end
-	end
-	
-	return true
-end
-
-
-function ENT:PhysicsSimulate( physobj , delta )
 end
