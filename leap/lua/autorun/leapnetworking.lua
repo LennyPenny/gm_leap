@@ -63,7 +63,7 @@ if CLIENT then
 		end
 		
 		--we count the player as having the leap if he's using a serialized frame, the module still needs to be loaded though
-		if leap_convars.posefromfile and #leap_convars.posefromfile > 0 then
+		if leap_convars.posefromfile:GetString() and #leap_convars.posefromfile:GetString() > 0 then
 			return true
 		end
 		

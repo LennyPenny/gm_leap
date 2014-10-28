@@ -75,14 +75,6 @@ function ENT:Update( pos , ang , delta , olderlastframereceivedtime , lastframer
 	physobj:UpdateShadow( pos , ang , delta )
 end
 
-function ENT:Think()
-end
-
-function ENT:PhysicsUpdate()
-end
-
-function ENT:PhysicsCollide( data , physobj )
-
 if CLIENT then
 	ENT.Mat = Material( "models/wireframe" )
 
