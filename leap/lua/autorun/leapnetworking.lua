@@ -74,6 +74,18 @@ if CLIENT then
 				net.WriteFloat( v:GrabStrength() )
 				net.WriteFloat( v:PalmWidth() )
 				
+				--[[
+				local arm = v:GetArm()
+				net.WriteBit( arm:IsValid() )
+				if IsValid( arm ) then
+					net.WriteVector( arm:Center() )
+					net.WriteNormal( arm:Direction() )
+					net.WriteVector( arm:ElbowPosition() )
+					net.WriteVector( arm:WristPosition() )
+					net.WriteFloat( arm:Width() )
+				end
+				]]
+				
 				local fingers = v:GetFingers()
 				net.WriteUInt( #fingers, 8 )	--a byte is fine
 				
@@ -216,6 +228,18 @@ else
 				frame.Hands[i].PinchStrength = net.ReadFloat()
 				frame.Hands[i].GrabStrength = net.ReadFloat()
 				frame.Hands[i].PalmWidth = net.ReadFloat()
+				
+				--[[
+				frame.Hands[i].Arm = {}
+				frame.Hands[i].Arm.IsValid = tobool( net.ReadBit() )
+				if frame.Hands[i].Arm.IsValid then
+					frame.Hands[i].Arm.Center = net.ReadVector()
+					frame.Hands[i].Arm.Direction = net.ReadNormal()
+					frame.Hands[i].Arm.ElbowPosition = net.ReadVector()
+					frame.Hands[i].Arm.WristPosition = net.ReadVector()
+					frame.Hands[i].Arm.Width = net.ReadFloat()
+				end
+				]]
 				
 				frame.Hands[i].FingersNumber = 	net.ReadUInt( 8 )	--a byte is fine
 				frame.Hands[i].Fingers = {}
