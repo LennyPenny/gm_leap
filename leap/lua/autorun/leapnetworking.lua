@@ -169,7 +169,7 @@ if CLIENT then
 		
 		if not IsValid( frame ) then return end
 		
-		net.Start( "leap" , true )
+		net.Start( "leap" , true )	--send an unreliable message
 			
 			--"redirect" the command to the bot, this is also checked serverside
 			
@@ -250,7 +250,7 @@ else
 	local function LeapMotionReceive( len , ply )
 		local overrideply = net.ReadEntity()
 		
-		if IsValid( overrideply ) and ply:IsBot() then
+		if IsValid( overrideply ) and overrideply:IsPlayer() and overrideply:IsBot() then
 			ply = overrideply
 		end
 		
