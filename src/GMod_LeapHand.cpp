@@ -172,7 +172,7 @@ int LeapHand::tostring( lua_State *state ) {
 }
 
 int LeapHand::gc( lua_State *state ) {
-	 Hand* hand = Get( state );
+	Hand* hand = Get( state );
 	if ( !hand ) return 0;
 
 	delete[] hand;
@@ -186,7 +186,7 @@ int LeapHand::Arm( lua_State *state ) {
 
 	Leap::Arm *arm = new Leap::Arm( hand->arm() );
 
-	//TODO
+	LeapArm::Push( state, arm );
 
 	return 1;
 }
