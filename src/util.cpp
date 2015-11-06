@@ -10,7 +10,7 @@ void GModLeap::PushSourceVector( lua_State *state, Leap::Vector *vector ) {
 
 	LUA->GetField( -1, "Vector" );
 	LUA->PushNumber( -1 * vector->x );
-	LUA->PushNumber( vector->z ); //dont ask me why leap made it like this
+	LUA->PushNumber( vector->z ); //technically, it's source doing it the other way around, but fix it up anyway
 	LUA->PushNumber( vector->y );
 	LUA->Call( 3, 1 );
 	LUA->Remove( -2 );

@@ -32,7 +32,7 @@ void LeapHand::DefineMeta( lua_State *state)
 		LUA->SetField( -2, "__gc" );
 
 		LUA->PushCFunction( LeapHand::Arm );
-		LUA->SetField( -2, "Arm" );
+		LUA->SetField( -2, "GetArm" );
 
 		LUA->PushCFunction( LeapHand::Basis );
 		LUA->SetField( -2, "Basis" );
