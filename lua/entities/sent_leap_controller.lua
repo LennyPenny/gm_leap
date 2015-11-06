@@ -190,14 +190,14 @@ if SERVER then
 				end
 				
 				if frame.Hands[i].Arm and frame.Hands[i].Arm.IsValid then
-					local armpos = frame.Hands[i].ArmPosition * self:GetScale()
-					local armang = frame.Hands[i].ArmDirection:Angle()
+					local armpos = frame.Hands[i].Arm.ArmPosition * self:GetScale()
+					local armang = frame.Hands[i].Arm.ArmDirection:Angle()
 					local armwidth = frame.Hands[i].Arm.ArmWidth
 					local armlength = ( frame.Hands[i].Arm.ElbowPosition - frame.Hands[i].Arm.WristPosition ):Length()
 					local arment = self.LeapShadowControllers[i - 1].Arm
 					
 					if not IsValid( arment ) then
-						local minb = Vector( 2 , armwidth * 0.5 , armlength * 0.5 )
+						local minb = Vector( armlength * 0.5 , armwidth * 0.5 , armwidth * 0.5 )
 						local maxbb = minb * -1
 						
 						arment = self:CreatePhysShadow( minb , maxbb )

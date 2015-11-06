@@ -32,6 +32,22 @@ void LeapArm::DefineMeta(lua_State *state) {
 	LUA->PushCFunction( LeapArm::Width );
 	LUA->SetField( -2, "Width" );
 
+	LUA->PushCFunction( LeapArm::Direction );
+	LUA->SetField( -2, "Direction" );
+
+	LUA->PushCFunction( LeapArm::ElbowPosition );
+	LUA->SetField( -2, "ElbowPosition" );
+
+	LUA->PushCFunction( LeapArm::WristPosition );
+	LUA->SetField( -2, "WristPosition" );
+
+	LUA->PushCFunction( LeapArm::Center );
+	LUA->SetField( -2, "Center" );
+
+	LUA->PushCFunction( LeapArm::IsValid );
+	LUA->SetField( -2, "IsValid" );
+
+
 	LUA->Pop();
 }
 
@@ -55,7 +71,7 @@ void LeapArm::Push(lua_State * state, Leap::Arm *arm) {
 	ud->data = arm;
 	ud->type = LeapArm::TYPE;
 
-	LUA->CreateMetaTableType("LeapBone", LeapArm::TYPE);
+	LUA->CreateMetaTableType("LeapArm", LeapArm::TYPE);
 	LUA->SetMetaTable(-2);
 }
 
