@@ -90,8 +90,8 @@ if CLIENT then
 				net.WriteFloat( v:GrabStrength() )
 				net.WriteFloat( v:PalmWidth() )
 				
-				--TODO:enable once we have arms support
-				--[[
+				
+				
 				local arm = v:GetArm()
 				net.WriteBit( arm:IsValid() )
 				if IsValid( arm ) then
@@ -101,7 +101,7 @@ if CLIENT then
 					net.WriteVector( arm:WristPosition() )
 					net.WriteFloat( arm:Width() )
 				end
-				]]
+				
 				
 				local fingers = v:GetFingers()
 				net.WriteUInt( #fingers, 8 )	--a byte is fine
@@ -281,7 +281,7 @@ else
 				frame.Hands[i].PalmWidth = net.ReadFloat()
 				
 				--TODO:enable once we have arms support
-				--[[
+				
 				frame.Hands[i].Arm = {}
 				frame.Hands[i].Arm.IsValid = tobool( net.ReadBit() )
 				if frame.Hands[i].Arm.IsValid then
@@ -291,7 +291,7 @@ else
 					frame.Hands[i].Arm.WristPosition = net.ReadVector()
 					frame.Hands[i].Arm.ArmWidth = net.ReadFloat()
 				end
-				]]
+				
 				
 				frame.Hands[i].FingersNumber = 	net.ReadUInt( 8 )	--a byte is fine
 				frame.Hands[i].Fingers = {}
