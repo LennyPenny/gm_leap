@@ -6,6 +6,7 @@
 
 #include "GMod_LeapFinger.h"
 #include "GMod_LeapFrame.h"
+#include "GMod_LeapArm.h"
 
 using namespace GarrysMod;
 using namespace Leap;

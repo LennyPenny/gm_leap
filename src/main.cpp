@@ -6,6 +6,7 @@
 #include "GMod_LeapHand.h"
 #include "GMod_LeapFinger.h"
 #include "GMod_LeapBone.h"
+#include "GMod_LeapArm.h"
 
 using namespace GarrysMod;
 using namespace Leap;
@@ -84,6 +85,8 @@ GMOD_MODULE_OPEN() {
 		LeapFinger::DefineMeta( state );
 
 		LeapBone::DefineMeta( state );
+
+		LeapArm::DefineMeta( state );
 
 	LUA->Pop();
 
