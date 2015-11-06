@@ -7,9 +7,6 @@
 
 namespace GModLeap 
 {
-	struct SourceVector {
-		float x, y, z;
-	};
 	void PushSourceVector( lua_State *state, Leap::Vector *vector );
 }
 

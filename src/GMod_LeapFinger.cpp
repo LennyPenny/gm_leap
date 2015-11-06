@@ -165,7 +165,7 @@ int LeapFinger::Direction( lua_State *state ) {
 	Finger *finger = Get( state );
 	if ( !finger ) return 0;
 
-	PushSourceVector( state, new Vector( finger->direction() ) );
+	PushSourceVector( state, &finger->direction() );
 
 	return 1;
 }
@@ -174,7 +174,7 @@ int LeapFinger::Frame( lua_State *state ) {
 	Finger *finger = Get( state );
 	if ( !finger ) return 0;
 
-	LeapFrame::Push( state, new Leap::Frame( finger->frame() ) );
+	LeapFrame::Push( state, &finger->frame() );
 
 	return 1;
 }
@@ -246,7 +246,7 @@ int LeapFinger::StabilizedTipPosition( lua_State *state ) {
 	Finger *finger = Get( state );
 	if ( !finger ) return 0;
 
-	PushSourceVector( state, new Vector( finger->stabilizedTipPosition() ) );
+	PushSourceVector( state, &finger->stabilizedTipPosition() );
 
 	return 1;
 }
@@ -264,7 +264,7 @@ int LeapFinger::TipPosition( lua_State *state ) {
 	Finger *finger = Get( state );
 	if ( !finger ) return 0;
 
-	PushSourceVector( state, new Vector( finger->tipPosition() ) );
+	PushSourceVector( state, &finger->tipPosition() );
 
 	return 1;
 }
@@ -273,7 +273,7 @@ int LeapFinger::TipVelocity( lua_State *state ) {
 	Finger *finger = Get( state );
 	if ( !finger ) return 0;
 
-	PushSourceVector( state, new Vector( finger->tipVelocity() ) );
+	PushSourceVector( state, &finger->tipVelocity() );
 
 	return 1;
 }

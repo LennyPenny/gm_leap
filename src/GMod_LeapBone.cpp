@@ -114,7 +114,7 @@ int LeapBone::Center( lua_State *state ) {
 	Bone *bone = Get( state );
 	if ( !bone ) return 0;
 
-	PushSourceVector( state, new Vector( bone->center() ) );
+	PushSourceVector( state, &bone->center() );
 
 	return 1;
 }
@@ -123,7 +123,7 @@ int LeapBone::Direction( lua_State *state ) {
 	Bone *bone = Get( state );
 	if ( !bone ) return 0;
 
-	PushSourceVector( state, new Vector( bone->direction() ) );
+	PushSourceVector( state, &bone->direction() );
 
 	return 1;
 }
@@ -150,7 +150,7 @@ int LeapBone::NextJoint( lua_State *state ) {
 	Bone *bone = Get( state );
 	if ( !bone ) return 0;
 
-	PushSourceVector( state, new Vector( bone->nextJoint() ) );
+	PushSourceVector( state, &bone->nextJoint() );
 
 	return 1;
 }
@@ -159,7 +159,7 @@ int LeapBone::PrevJoint( lua_State *state ) {
 	Bone *bone = Get( state );
 	if ( !bone ) return 0;
 
-	PushSourceVector( state, new Vector( bone->prevJoint() ) );
+	PushSourceVector( state, &bone->prevJoint() );
 
 	return 1;
 }

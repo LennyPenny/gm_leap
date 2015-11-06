@@ -91,7 +91,7 @@ int LeapArm::Direction( lua_State *state )
 	Arm *arm = Get( state );
 	if( !arm ) return 0;
 
-	PushSourceVector( state, new Vector( arm->direction() ) );
+	PushSourceVector( state, &arm->direction() );
 	return 1;
 }
 
@@ -101,7 +101,7 @@ int LeapArm::ElbowPosition( lua_State *state )
 	Arm *arm = Get( state );
 	if( !arm ) return 0;
 
-	PushSourceVector( state, new Vector( arm->elbowPosition() ) );
+	PushSourceVector( state, &arm->elbowPosition() );
 	return 1;
 }
 
@@ -110,7 +110,7 @@ int LeapArm::WristPosition( lua_State *state )
 	Arm *arm = Get( state );
 	if( !arm ) return 0;
 
-	PushSourceVector( state, new Vector( arm->wristPosition() ) );
+	PushSourceVector( state, &arm->wristPosition() );
 	return 1;
 }
 
@@ -119,7 +119,7 @@ int LeapArm::Center( lua_State *state )
 	Arm *arm = Get( state );
 	if( !arm ) return 0;
 
-	PushSourceVector( state, new Vector( arm->center() ) );
+	PushSourceVector( state, &arm->center() );
 	return 1;
 }
 
