@@ -30,6 +30,102 @@ GESTURE_TYPE_SCREEN_TAP		= 3
 GESTURE_TYPE_KEY_TAP		= 4
 
 
+--this function takes a table, not the actual frame userdata
+local function LeapWriteNetFrame( frame )
+	net.WriteUInt( frame.HandsNumber , 8 )	--a byte is fine
+	
+	for i = 1 , frame.HandsNumber do
+		
+		net.WriteBit( frame.Hands[i].IsValid )
+		if frame.Hands[i].IsValid then
+			net.WriteBit( frame.Hands[i].IsLeft )
+			net.WriteVector( frame.Hands[i].PalmPosition )
+			net.WriteNormal( frame.Hands[i].PalmDirection )
+			net.WriteVector( frame.Hands[i].PalmVelocity )
+			net.WriteFloat( frame.Hands[i].PinchStrength )
+			net.WriteFloat( frame.Hands[i].GrabStrength )
+			net.WriteFloat( frame.Hands[i].PalmWidth )
+			
+			net.WriteBit( frame.Hands[i].Arm.IsValid )
+			if frame.Hands[i].Arm.IsValid then
+				net.WriteVector( frame.Hands[i].Arm.ArmPosition )
+				net.WriteNormal( frame.Hands[i].Arm.ArmDirection )
+				net.WriteVector( frame.Hands[i].Arm.ElbowPosition )
+				net.WriteVector( frame.Hands[i].Arm.WristPosition )
+				net.WriteFloat( frame.Hands[i].Arm.ArmWidth )
+			end			
+			
+			net.WriteUInt( frame.Hands[i].FingersNumber , 8 )
+			for j = 1 , frame.Hands[i].FingersNumber do
+				net.WriteUInt( frame.Hands[i].Fingers[j].BonesNumber , 8 )
+				
+				for k=1,frame.Hands[i].Fingers[j].BonesNumber do
+					net.WriteVector( frame.Hands[i].Fingers[j].Bones[k].BonePosition )
+					net.WriteNormal( frame.Hands[i].Fingers[j].Bones[k].BoneDirection )
+					net.WriteFloat( frame.Hands[i].Fingers[j].Bones[k].BoneLength )
+					net.WriteFloat( frame.Hands[i].Fingers[j].Bones[k].BoneWidth )
+				end
+			end
+		end
+	end	
+
+end
+
+local function LeapReadNetFrame()
+	local frame = {}
+	frame.HandsNumber = net.ReadUInt( 8 )	--a byte is fine
+	frame.Hands = {}
+	
+	for i=1,frame.HandsNumber do
+		frame.Hands[i] = {}
+		frame.Hands[i].IsValid = tobool( net.ReadBit() )
+		if frame.Hands[i].IsValid then
+			frame.Hands[i].IsLeft = tobool( net.ReadBit() )
+			frame.Hands[i].IsRight = not frame.Hands[i].IsLeft
+			frame.Hands[i].PalmPosition = net.ReadVector()
+			frame.Hands[i].PalmDirection = net.ReadNormal()
+			frame.Hands[i].PalmVelocity = net.ReadVector()
+			frame.Hands[i].PinchStrength = net.ReadFloat()
+			frame.Hands[i].GrabStrength = net.ReadFloat()
+			frame.Hands[i].PalmWidth = net.ReadFloat()
+			
+			--TODO:enable once we have arms support
+			
+			frame.Hands[i].Arm = {}
+			frame.Hands[i].Arm.IsValid = tobool( net.ReadBit() )
+			if frame.Hands[i].Arm.IsValid then
+				frame.Hands[i].Arm.ArmPosition = net.ReadVector()
+				frame.Hands[i].Arm.ArmDirection = net.ReadNormal()
+				frame.Hands[i].Arm.ElbowPosition = net.ReadVector()
+				frame.Hands[i].Arm.WristPosition = net.ReadVector()
+				frame.Hands[i].Arm.ArmWidth = net.ReadFloat()
+			end
+			
+			
+			frame.Hands[i].FingersNumber = 	net.ReadUInt( 8 )	--a byte is fine
+			frame.Hands[i].Fingers = {}
+			for j = 1 , frame.Hands[i].FingersNumber do
+				frame.Hands[i].Fingers[j] = {}
+				frame.Hands[i].Fingers[j].BonesNumber = net.ReadUInt( 8 )	--a byte is fine
+				frame.Hands[i].Fingers[j].Bones = {}
+				
+				for k=1,frame.Hands[i].Fingers[j].BonesNumber do
+					frame.Hands[i].Fingers[j].Bones[k] = {}
+					frame.Hands[i].Fingers[j].Bones[k].BonePosition = net.ReadVector()
+					frame.Hands[i].Fingers[j].Bones[k].BoneDirection = net.ReadNormal()
+					frame.Hands[i].Fingers[j].Bones[k].BoneLength = net.ReadFloat()
+					frame.Hands[i].Fingers[j].Bones[k].BoneWidth = net.ReadFloat()
+					
+					local bone = frame.Hands[i].Fingers[j].Bones[k]
+					--debugoverlay.BoxAngles( bone.BonePosition , Vector(bone.BoneLength * .5, bone.BoneWidth *.5, bone.BoneWidth*.5), Vector(-bone.BoneLength*.5, -bone.BoneWidth*.5, -bone.BoneWidth*.5), bone.BoneDirection:Angle() , 0.05 )
+				end
+			end
+		end
+	end
+	
+	return frame
+end
+
 if CLIENT then
 	local leap_convars = {
 		scale = CreateConVar( "cl_leap_scale" , "0.1" , FCVAR_ARCHIVE + FCVAR_USERINFO ),
@@ -70,59 +166,64 @@ if CLIENT then
 		return leap.IsConnected()
 	end
 	
-	local function LeapWriteFrameData( frame )
+	--this function puts all the userdata we need into a table
+	local function LeapFrameToTable( userdataframe )
 		
-		local hands = frame:GetHands()
-		local handsnumber = #hands
+		local frame = {}
+		local hands = userdataframe:GetHands()
 		
-		net.WriteUInt( handsnumber, 8 )	--a byte is fine
+		frame.HandsNumber = #hands
+		frame.Hands = {}
 		
 		for i , v in pairs( hands ) do
-			
-			net.WriteBit( IsValid( v ) )
-			
-			if IsValid( v ) then
-				net.WriteBit( v:IsLeft() )
-				net.WriteVector( v:PalmPosition() )
-				net.WriteNormal( v:PalmNormal() )
-				net.WriteVector( v:PalmVelocity() )
-				net.WriteFloat( v:PinchStrength() )
-				net.WriteFloat( v:GrabStrength() )
-				net.WriteFloat( v:PalmWidth() )
-				
+			frame.Hands[i] = {}
+			frame.Hands[i].IsValid = IsValid( v )
+			if frame.Hands[i].IsValid then
+				frame.Hands[i].IsLeft = v:IsLeft()
+				frame.Hands[i].IsRight = not frame.Hands[i].IsLeft
+				frame.Hands[i].PalmPosition = v:PalmPosition()
+				frame.Hands[i].PalmDirection = v:PalmNormal()
+				frame.Hands[i].PalmVelocity = v:PalmVelocity()
+				frame.Hands[i].PinchStrength = v:PinchStrength()
+				frame.Hands[i].GrabStrength = v:GrabStrength()
+				frame.Hands[i].PalmWidth = v:PalmWidth()
 				
 				
 				local arm = v:GetArm()
-				net.WriteBit( arm:IsValid() )
-				if IsValid( arm ) then
-					net.WriteVector( arm:Center() )
-					net.WriteNormal( arm:Direction() )
-					net.WriteVector( arm:ElbowPosition() )
-					net.WriteVector( arm:WristPosition() )
-					net.WriteFloat( arm:Width() )
+				
+				frame.Hands[i].Arm = {}
+				frame.Hands[i].Arm.IsValid = arm:IsValid()
+				if frame.Hands[i].Arm.IsValid then
+					frame.Hands[i].Arm.ArmPosition = arm:Center()
+					frame.Hands[i].Arm.ArmDirection = arm:Direction()
+					frame.Hands[i].Arm.ElbowPosition = arm:ElbowPosition()
+					frame.Hands[i].Arm.WristPosition = arm:WristPosition()
+					frame.Hands[i].Arm.ArmWidth = arm:Width()
 				end
 				
-				
 				local fingers = v:GetFingers()
-				net.WriteUInt( #fingers, 8 )	--a byte is fine
 				
-				for j,k in pairs( fingers ) do
+				frame.Hands[i].FingersNumber = 	#fingers
+				frame.Hands[i].Fingers = {}
+				for j, finger in pairs( fingers ) do
+					local bones = finger:GetBones()
 					
-					local bones = k:GetBones()
+					frame.Hands[i].Fingers[j] = {}
+					frame.Hands[i].Fingers[j].BonesNumber = #bones	--a byte is fine
+					frame.Hands[i].Fingers[j].Bones = {}
 					
-					net.WriteUInt( #bones , 8 )	-- a byte is fine
-					
-					for _ , _k in pairs( bones ) do
-						
-						net.WriteVector( _k:Center() )
-						net.WriteNormal( _k:Direction() )
-						net.WriteFloat( _k:Length() )
-						net.WriteFloat( _k:Width() )
-						
+					for k , _k in pairs( bones ) do
+						frame.Hands[i].Fingers[j].Bones[k] = {}
+						frame.Hands[i].Fingers[j].Bones[k].BonePosition = _k:Center()
+						frame.Hands[i].Fingers[j].Bones[k].BoneDirection = _k:Direction()
+						frame.Hands[i].Fingers[j].Bones[k].BoneLength = _k:Length()
+						frame.Hands[i].Fingers[j].Bones[k].BoneWidth = _k:Width()
 					end
 				end
 			end
 		end
+		
+		return frame
 	end
 	
 	local function LeapGetFrameFromFile( path )
@@ -173,8 +274,11 @@ if CLIENT then
 			return
 		end
 		
+		leap_lastframe = frame
+		
+		local luaframe = LeapFrameToTable( frame )
+		
 		net.Start( "leap" , true )	--send an unreliable message
-			
 			--"redirect" the command to the bot, this is also checked serverside
 			
 			local botid = leap_convars.fakebot:GetInt()
@@ -182,8 +286,8 @@ if CLIENT then
 			
 			net.WriteEntity( IsValid( botent ) and botent or NULL )
 			
-			LeapWriteFrameData( frame )
-			leap_lastframe = frame
+			LeapWriteNetFrame( luaframe )
+			
 		net.SendToServer()
 
 	end
@@ -263,57 +367,7 @@ else
 			CreateLeapController( ply )
 		end
 		
-		local frame = {}
-		frame.HandsNumber = net.ReadUInt( 8 )	--a byte is fine
-		frame.Hands = {}
-		
-		for i=1,frame.HandsNumber do
-			frame.Hands[i] = {}
-			frame.Hands[i].IsValid = tobool( net.ReadBit() )
-			if frame.Hands[i].IsValid then
-				frame.Hands[i].IsLeft = tobool( net.ReadBit() )
-				frame.Hands[i].IsRight = not frame.Hands[i].IsLeft
-				frame.Hands[i].PalmPosition = net.ReadVector()
-				frame.Hands[i].PalmDirection = net.ReadNormal()
-				frame.Hands[i].PalmVelocity = net.ReadVector()
-				frame.Hands[i].PinchStrength = net.ReadFloat()
-				frame.Hands[i].GrabStrength = net.ReadFloat()
-				frame.Hands[i].PalmWidth = net.ReadFloat()
-				
-				--TODO:enable once we have arms support
-				
-				frame.Hands[i].Arm = {}
-				frame.Hands[i].Arm.IsValid = tobool( net.ReadBit() )
-				if frame.Hands[i].Arm.IsValid then
-					frame.Hands[i].Arm.ArmPosition = net.ReadVector()
-					frame.Hands[i].Arm.ArmDirection = net.ReadNormal()
-					frame.Hands[i].Arm.ElbowPosition = net.ReadVector()
-					frame.Hands[i].Arm.WristPosition = net.ReadVector()
-					frame.Hands[i].Arm.ArmWidth = net.ReadFloat()
-				end
-				
-				
-				frame.Hands[i].FingersNumber = 	net.ReadUInt( 8 )	--a byte is fine
-				frame.Hands[i].Fingers = {}
-				for j = 1 , frame.Hands[i].FingersNumber do
-					frame.Hands[i].Fingers[j] = {}
-					frame.Hands[i].Fingers[j].BonesNumber = net.ReadUInt( 8 )	--a byte is fine
-					frame.Hands[i].Fingers[j].Bones = {}
-					
-					for k=1,frame.Hands[i].Fingers[j].BonesNumber do
-						frame.Hands[i].Fingers[j].Bones[k] = {}
-						frame.Hands[i].Fingers[j].Bones[k].BonePosition = net.ReadVector()
-						frame.Hands[i].Fingers[j].Bones[k].BoneDirection = net.ReadNormal()
-						frame.Hands[i].Fingers[j].Bones[k].BoneLength = net.ReadFloat()
-						frame.Hands[i].Fingers[j].Bones[k].BoneWidth = net.ReadFloat()
-						
-						local bone = frame.Hands[i].Fingers[j].Bones[k]
-						--debugoverlay.BoxAngles( bone.BonePosition , Vector(bone.BoneLength * .5, bone.BoneWidth *.5, bone.BoneWidth*.5), Vector(-bone.BoneLength*.5, -bone.BoneWidth*.5, -bone.BoneWidth*.5), bone.BoneDirection:Angle() , 0.15 )
-					end
-				
-				end
-			end
-		end
+		local frame = LeapReadNetFrame()
 		
 		AnalyzeLeapData( ply , frame )
 		
